@@ -17,8 +17,8 @@ namespace EvoScript {
         Unknown, Public, Private, Protected
     };
 
-    enum Virtualization {
-        None, Virtual, Override
+    enum MethodType {
+        Normal, Virtual, Override, Static
     };
 
     static std::string PublicityToString(Publicity publicity, bool colon = true) {
@@ -47,7 +47,7 @@ namespace EvoScript {
         std::string              m_class;
         std::string              m_return;
         std::vector<std::string> m_args;
-        Virtualization           m_virtual;
+        MethodType               m_type;
 
         [[nodiscard]] std::string ToString() const {
             std::string strArgs;
@@ -62,27 +62,35 @@ namespace EvoScript {
             }
 
             std::string result;
-            switch (m_virtual) {
-                case None:
+            switch (m_type) {
+                case Normal:
                     result += m_return + " " + m_name + "(" + strArgs + ") {\n";
                     break;
                 case Virtual:
-                    result += "virtual " + m_return + " " + m_name + "(" + strArgs + ") { ";
+                    result += "virtual " + m_return + " " + m_name + "(" + strArgs + ") {\n";
                     break;
                 case Override:
                     result += m_return + " " + m_name + "(" + strArgs + ") override {\n";
                     break;
+                case Static:
+                    result += "static " + m_return + " " + m_name + "(" + strArgs + ") {\n";
+                    break;
             }
 
-            if (m_virtual != Virtual) {
-                const void *address = static_cast<const void *>(m_pointer);
-                std::stringstream ss;
-                ss << address;
+            const void *address = static_cast<const void *>(m_pointer);
+            std::stringstream ss;
+            ss << address;
 
+            if (m_type == Virtual || m_type == Override || m_type == Normal) {
                 result += "\tvoid* voidPtr = reinterpret_cast<void*>(0x" + ss.str() + ");\n";
                 result += "\ttypedef " + m_return + " (" + m_class + "::*ClassPtr)(" + strArgs + ");\n";
                 result += "\tauto origPtr = *reinterpret_cast<ClassPtr*>(&voidPtr);\n";
                 result += "\treturn (*this.*origPtr)(" + argNames + ");\n";
+            } else if (m_type == Static) {
+                result += "\tvoid* voidPtr = reinterpret_cast<void*>(0x" + ss.str() + ");\n";
+                result += "\ttypedef " + m_return + " (*ClassPtr)(" + strArgs + ");\n";
+                result += "\tauto origPtr = *reinterpret_cast<ClassPtr*>(&voidPtr);\n";
+                result += "\treturn (*origPtr)(" + argNames + ");\n";
             }
 
             result += "}";

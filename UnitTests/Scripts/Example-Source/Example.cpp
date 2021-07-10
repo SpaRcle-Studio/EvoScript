@@ -27,6 +27,8 @@ EXTERN_DLL_EXPORT void Awake() {
     g_simpleClass->Add(40);
     auto v = g_simpleClass->GetVector();
     std::cout << v[0] << std::endl;
+
+    SimpleClass::StaticMethod();
 }
 
 EXTERN_DLL_EXPORT void Start() {

@@ -68,7 +68,7 @@ namespace EvoScript {
                 const std::string& methodName,
                 const std::string& returnType,
                 const std::vector<std::string>& argTypes,
-                Virtualization _virtual);
+                MethodType type);
 
         bool RegisterClass(
                 const std::string& name,
@@ -97,13 +97,22 @@ namespace EvoScript {
                 EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));                                \
     _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::Override); } \
 
-#define ESRegisterMethod(_addrTable, _class, _method, _returnType, _args) {                      \
-    _returnType (_class::*_ptr)_args = &_class::_method;                                         \
-    void* pp = *reinterpret_cast<void**>(&_ptr);                                                 \
-    std::vector<std::string> strArgs =                                                           \
-        EvoScript::Tools::RemoveFirstSpaces(                                                     \
-            EvoScript::Tools::Split(                                                             \
-                EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));                            \
-    _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::None); } \
+#define ESRegisterMethod(_addrTable, _class, _method, _returnType, _args) {                        \
+    _returnType (_class::*_ptr)_args = &_class::_method;                                           \
+    void* pp = *reinterpret_cast<void**>(&_ptr);                                                   \
+    std::vector<std::string> strArgs =                                                             \
+        EvoScript::Tools::RemoveFirstSpaces(                                                       \
+            EvoScript::Tools::Split(                                                               \
+                EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));                              \
+    _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::Normal); } \
+
+#define ESRegisterStaticMethod(_addrTable, _class, _method, _returnType, _args) {                  \
+    _returnType (*_ptr)_args = &_class::_method;                                                   \
+    void* pp = *reinterpret_cast<void**>(&_ptr);                                                   \
+    std::vector<std::string> strArgs =                                                             \
+        EvoScript::Tools::RemoveFirstSpaces(                                                       \
+            EvoScript::Tools::Split(                                                               \
+                EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));                              \
+    _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::Static); } \
 
 #endif //EVOSCRIPT_ADDRESSTABLEGEN_H

@@ -23,7 +23,6 @@ namespace EvoScript {
         Compiler() = default;
         ~Compiler() = default;
     private:
-        std::string m_cmakePath     = "None";
         std::string m_generator     = "None";
         std::string m_cachePath     = "None";
         std::mutex  m_mutex         = std::mutex();
@@ -41,10 +40,7 @@ namespace EvoScript {
         bool RegisterScript(Script* script);
         bool RemoveScript(Script* script);
     public:
-        static Compiler* Create(
-                const std::string& cmakePath,
-                const std::string& generator,
-                const std::string& cachePath);
+        static Compiler* Create(const std::string& generator, const std::string& cachePath);
         void Destroy();
         void Free();
     };

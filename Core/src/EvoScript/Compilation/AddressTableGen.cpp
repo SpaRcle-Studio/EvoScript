@@ -44,7 +44,7 @@ bool EvoScript::AddressTableGen::RegisterMethod(
     const std::string &methodName,
     const std::string &returnType,
     const std::vector<std::string>& argTypes,
-    Virtualization _virtual)
+    MethodType type)
 {
     if (auto _class = m_classes.find(className); _class == m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterMethod() : class \"" + className + "\" isn't exists!");
@@ -57,7 +57,7 @@ bool EvoScript::AddressTableGen::RegisterMethod(
             .m_class   = className,
             .m_return  = returnType,
             .m_args    = argTypes,
-            .m_virtual = _virtual
+            .m_type    = type
         };
 
         auto& [key, header] = *_class;

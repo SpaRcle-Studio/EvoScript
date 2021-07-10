@@ -6,7 +6,6 @@
 class Parent {
 public:
     virtual void PrintHello() { }
-    void PrintHello2() { }
     int abc;
 };
 
@@ -42,6 +41,10 @@ public:
     void Print(const char* msg) {
         std::cout << msg << std::endl;
     }
+
+    static void StaticMethod() {
+        std::cout << "static method\n";
+    }
 };
 
 int main() {
@@ -68,6 +71,7 @@ int main() {
         EvoScript::InheritClass { "Parent", EvoScript::Public }
     });
     ESRegisterOverrideMethod(address, SimpleClass, PrintHello, void, ())
+    ESRegisterStaticMethod(address, SimpleClass, StaticMethod, void, ())
     ESRegisterMethod(address, SimpleClass, Print, void, (const char*))
     ESRegisterMethod(address, SimpleClass, Summ, int, (int, int))
     ESRegisterMethod(address, SimpleClass, GetNumber, int, ())
@@ -77,10 +81,7 @@ int main() {
 
     address->Save(R"(J:\C++\EvoScript\UnitTests\Scripts\Library\)");
 
-    auto* compiler = EvoScript::Compiler::Create(
-            R"(F:\Programs\CLion 2020.1\bin\cmake\win\bin\cmake.exe)",
-            "Visual Studio 16 2019",
-            R"(J:\C++\EvoScript\Cache)");
+    auto* compiler = EvoScript::Compiler::Create("Visual Studio 16 2019", R"(J:\C++\EvoScript\Cache)");
 
     auto* script = EvoScript::Script::Allocate("Just script", compiler, true);
     if (!script->Load(R"(J:\C++\EvoScript\UnitTests\Scripts\Example)")) {

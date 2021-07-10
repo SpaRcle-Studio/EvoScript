@@ -6,10 +6,7 @@
 
 #include <EvoScript/Tools/Randomizer.h>
 
-EvoScript::Compiler *EvoScript::Compiler::Create(
-        const std::string& cmakePath,
-        const std::string& generator,
-        const std::string& cachePath) {
+EvoScript::Compiler *EvoScript::Compiler::Create(const std::string& generator, const std::string& cachePath) {
     if (static Compiler* compiler = nullptr; compiler) {
         ES_ERROR("Compiler::Create() : compiler already exists!");
         return nullptr;
@@ -17,7 +14,6 @@ EvoScript::Compiler *EvoScript::Compiler::Create(
     else {
         compiler = new Compiler();
 
-        compiler->m_cmakePath = Tools::FixPath(cmakePath);
         compiler->m_generator = Tools::FixPath(generator);
         compiler->m_cachePath = Tools::FixPath(cachePath);
 
