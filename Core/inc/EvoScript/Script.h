@@ -38,7 +38,11 @@ namespace EvoScript {
 
         IState*     m_state         = nullptr;
 
-        bool        m_debug         = false;
+#ifdef NDEBUG
+        const bool  m_debug         = false;
+#else
+        const bool  m_debug         = true;
+#endif
     public:
         Typedefs::AwakeFnPtr       m_awake  = nullptr;
         Typedefs::StartFnPtr       m_start  = nullptr;

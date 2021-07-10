@@ -30,7 +30,7 @@ namespace EvoScript::Tools {
     }
 
     static bool RemoveFile(const std::string& path) {
-        return fs::remove(path);
+        return std::remove(path.c_str());
     }
 
     static bool CreateDirectory(const std::string& directory) {

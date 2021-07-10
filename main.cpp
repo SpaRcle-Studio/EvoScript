@@ -3,15 +3,37 @@
 #include <EvoScript/Compilation/Compiler.h>
 #include <EvoScript/Compilation/AddressTableGen.h>
 
-class SimpleClass {
+class Parent {
+public:
+    virtual void PrintHello() { }
+    void PrintHello2() { }
+    int abc;
+};
+
+class SimpleClass : public Parent {
 private:
-    int number;
+    int number = 20;
 public:
     std::string str;
+    std::vector<int> v;
 public:
     int Summ(int a, int b) {
         return a + b;
     }
+
+    void PrintHello() override {
+        std::cout << "Hello\n";
+    }
+
+    std::string GetString() {
+        return str;
+    }
+
+    void Add(int i) {
+        v.emplace_back(i);
+    }
+
+    std::vector<int> GetVector() { return v; }
 
     int GetNumber() {
         return number;
@@ -22,15 +44,6 @@ public:
     }
 };
 
-#define ESRegisterMethod(_addrTable, _class, _method, _returnType, _args) {     \
-    _returnType (_class::*_ptr)_args = &_class::_method;                        \
-    void* pp = *reinterpret_cast<void**>(&_ptr);                                \
-    std::vector<std::string> strArgs =                                          \
-        EvoScript::Tools::RemoveFirstSpaces(                                    \
-            EvoScript::Tools::Split(                                            \
-                EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));           \
-    _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs); } \
-
 int main() {
     EvoScript::Tools::ESDebug::Log   = [](const std::string& msg) { std::cout << "[LOG] "   << msg << std::endl; };
     EvoScript::Tools::ESDebug::Info  = [](const std::string& msg) { std::cout << "[INFO] "  << msg << std::endl; };
@@ -39,19 +52,31 @@ int main() {
 
     auto* address = new EvoScript::AddressTableGen();
 
-    address->RegisterClass("SimpleClass", "Header.h", {
+    address->RegisterClass("Parent", "Header", {
+            { "int", "abc",    EvoScript::Public  }
+    });
+    ESRegisterVirtualMethod(address, Parent, PrintHello, void, ())
+
+    address->RegisterClass("SimpleClass", "Header", {
         { "int",         "number", EvoScript::Private },
         { "std::string", "str",    EvoScript::Public  }
     },
     {
-        "string", "iostream"
+        "string", "iostream", "vector"
+    },
+    {
+        EvoScript::InheritClass { "Parent", EvoScript::Public }
     });
+    ESRegisterOverrideMethod(address, SimpleClass, PrintHello, void, ())
     ESRegisterMethod(address, SimpleClass, Print, void, (const char*))
     ESRegisterMethod(address, SimpleClass, Summ, int, (int, int))
+    ESRegisterMethod(address, SimpleClass, GetNumber, int, ())
+    ESRegisterMethod(address, SimpleClass, GetString, std::string, ())
+    ESRegisterMethod(address, SimpleClass, GetVector, std::vector<int>, ())
+    ESRegisterMethod(address, SimpleClass, Add, void, (int))
 
-    auto code = address->GetHeader("Header.h").m_classes["SimpleClass"].ToString();
-    std::cout << code << std::endl;
-    typedef void (SimpleClass::*ClassPtr)(const char* arg0);
+    address->Save(R"(J:\C++\EvoScript\UnitTests\Scripts\Library\)");
+
     auto* compiler = EvoScript::Compiler::Create(
             R"(F:\Programs\CLion 2020.1\bin\cmake\win\bin\cmake.exe)",
             "Visual Studio 16 2019",
@@ -61,6 +86,12 @@ int main() {
     if (!script->Load(R"(J:\C++\EvoScript\UnitTests\Scripts\Example)")) {
         return -1;
     }
+
+    typedef void(*ProcessFnPtr)(SimpleClass*);
+    auto fun = script->GetState()->GetFunction<ProcessFnPtr>("Process");
+    auto simple = new SimpleClass();
+    simple->str = "aboba";
+    fun(simple);
 
     script->Awake();
     script->Start();

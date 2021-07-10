@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <sstream>
 #include <vector>
+#include <ctime>
 
 namespace EvoScript::Tools {
     static std::vector<std::string> RemoveFirstSpaces(std::vector<std::string> strings) {
@@ -20,6 +21,12 @@ namespace EvoScript::Tools {
 
     inline static std::string Read(const std::string& str, uint32_t count) {
         return str.substr(0, count);
+    }
+
+    static std::string ToUpper(std::string str) {
+        for (char& i : str)
+            i = (char)toupper(i);
+        return str;
     }
 
     static std::string TabString(std::string str) {
@@ -44,6 +51,12 @@ namespace EvoScript::Tools {
             return str;
         str.replace(start_pos, from.length(), to);
         goto ret;
+    }
+
+    static std::string GetData() {
+        std::time_t result = std::time(nullptr);
+        std::string str = std::ctime(&result);
+        return str.substr(0, str.size() - 1);
     }
 
     static std::string FixPath(const std::string& path) {

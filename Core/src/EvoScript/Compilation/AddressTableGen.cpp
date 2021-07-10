@@ -3,6 +3,7 @@
 //
 
 #include <EvoScript/Tools/Debug.h>
+#include <EvoScript/Tools/FileSystem.h>
 #include "EvoScript/Compilation/AddressTableGen.h"
 
 bool EvoScript::AddressTableGen::RegisterClass(
@@ -10,7 +11,7 @@ bool EvoScript::AddressTableGen::RegisterClass(
         const std::string &header,
         const std::vector<Property> &properties,
         const std::set<std::string> &includes,
-        uint32_t priority)
+        const std::set<InheritClass>& inherit)
 {
     if (auto f = m_classes.find(name); f != m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterClass() : class \"" + name + "\" is already exists!");
@@ -22,7 +23,7 @@ bool EvoScript::AddressTableGen::RegisterClass(
         .m_name       = name,
         .m_properties = properties,
         .m_methods    = { },
-        .m_priority   = priority
+        .m_inherit    = inherit,
     };
 
     if (auto f = m_headers.find(header); f != m_headers.end()) { // add in exists header
@@ -31,7 +32,7 @@ bool EvoScript::AddressTableGen::RegisterClass(
     }
     else { // create new header
         std::map<std::string, Class> m = { { name, _class } };
-        m_headers[header] = { includes, m };
+        m_headers[header] = { header, includes, m };
     }
 
     return true;
@@ -42,7 +43,8 @@ bool EvoScript::AddressTableGen::RegisterMethod(
     const std::string &className,
     const std::string &methodName,
     const std::string &returnType,
-    const std::vector<std::string>& argTypes)
+    const std::vector<std::string>& argTypes,
+    Virtualization _virtual)
 {
     if (auto _class = m_classes.find(className); _class == m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterMethod() : class \"" + className + "\" isn't exists!");
@@ -54,7 +56,8 @@ bool EvoScript::AddressTableGen::RegisterMethod(
             .m_name    = methodName,
             .m_class   = className,
             .m_return  = returnType,
-            .m_args    = argTypes
+            .m_args    = argTypes,
+            .m_virtual = _virtual
         };
 
         auto& [key, header] = *_class;
@@ -62,4 +65,23 @@ bool EvoScript::AddressTableGen::RegisterMethod(
 
         return true;
     }
+}
+
+bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
+    Tools::CreatePath(Tools::FixPath(libFolder));
+
+    for (const auto& [key, header] : m_headers) {
+        std::string path = libFolder + key + ".h";
+        std::ofstream file(path);
+        if (!file.is_open()) {
+            ES_ERROR("AddressTableGen::Save() : failed to create file! \n\tPath: " + path);
+            return false;
+        }
+
+        file << header.ToString();
+
+        file.close();
+    }
+
+    return true;
 }
