@@ -6,10 +6,35 @@
 #define EVOSCRIPT_STRINGUTILS_H
 
 #include <string>
+#include <algorithm>
+#include <sstream>
+#include <vector>
 
 namespace EvoScript::Tools {
+    static std::vector<std::string> RemoveFirstSpaces(std::vector<std::string> strings) {
+        for (auto& str : strings)
+            if (str[0] == ' ')
+                str.erase(0, 1);
+        return strings;
+    }
+
     inline static std::string Read(const std::string& str, uint32_t count) {
         return str.substr(0, count);
+    }
+
+    static std::string TabString(std::string str) {
+        str = "\t" + str;
+
+        size_t pos = 0;
+
+        ret:
+        size_t start_pos = str.find('\n', pos);
+        if(start_pos == std::string::npos)
+            return str;
+        pos += start_pos - pos;
+        str.insert(str.begin() + pos + 1, '\t');
+        pos += 1;
+        goto ret;
     }
 
     static std::string Replace(std::string str, const std::string& from, const std::string& to) {
@@ -23,6 +48,21 @@ namespace EvoScript::Tools {
 
     static std::string FixPath(const std::string& path) {
         return Tools::Replace(Tools::Replace(path, "\\", "/"), "//", "/");
+    }
+
+    static std::string DeleteSymbolsInStr(std::string str, const std::string& symbols) {
+        for (const auto& symbol : symbols)
+            str.erase(remove(str.begin(),str.end(), symbol),str.end());
+        return str;
+    }
+
+    static std::vector<std::string> Split(const std::string& s) {
+        std::vector<std::string> result;
+        std::istringstream iss(s);
+        std::string token;
+        while (std::getline(iss, token, ','))
+            result.push_back(token);
+        return result;
     }
 
     static std::string BackReadTo(const std::string& str, const char c) {

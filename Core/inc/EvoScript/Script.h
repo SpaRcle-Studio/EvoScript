@@ -6,7 +6,7 @@
 #define EVOSCRIPT_SCRIPT_H
 
 #include <EvoScript/IState.h>
-#include <EvoScript/Typedefs.h>
+#include <EvoScript/Compilation/Typedefs.h>
 
 #include <utility>
 

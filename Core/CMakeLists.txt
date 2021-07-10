@@ -4,7 +4,9 @@ project(EvoScriptCore)
 set(CMAKE_CXX_STANDARD 20)
 
 add_library(EvoScriptCore STATIC
-        src/EvoScript/Compiler.cpp
+        src/EvoScript/Compilation/Compiler.cpp
+        src/EvoScript/Compilation/AddressTableGen.cpp
+
         src/EvoScript/Script.cpp
         src/EvoScript/IState.cpp
 

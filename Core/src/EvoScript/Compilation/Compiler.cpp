@@ -2,7 +2,7 @@
 // Created by Nikita on 03.07.2021.
 //
 
-#include "EvoScript/Compiler.h"
+#include "EvoScript/Compilation/Compiler.h"
 
 #include <EvoScript/Tools/Randomizer.h>
 

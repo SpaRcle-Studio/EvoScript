@@ -3,7 +3,7 @@
 //
 
 #include <EvoScript/Script.h>
-#include <EvoScript/Compiler.h>
+#include <EvoScript/Compilation/Compiler.h>
 
 bool EvoScript::Script::Load(const std::string &path) {
     if (this->m_path = path; !this->m_compiler->Compile(this)) {
