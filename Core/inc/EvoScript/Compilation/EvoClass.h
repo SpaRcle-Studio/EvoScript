@@ -18,11 +18,11 @@ namespace EvoScript {
     };
 
     struct Class {
-        std::string            m_header;
-        std::string            m_name;
-        std::vector<Property>  m_properties;
-        std::vector<Method>    m_methods;
-        std::set<InheritClass> m_inherit;
+        std::string               m_header;
+        std::string               m_name;
+        std::vector<Property>     m_properties;
+        std::vector<Method>       m_methods;
+        std::vector<InheritClass> m_inherit;
 
         [[nodiscard]] std::string ToString() const {
             std::string result;
@@ -55,7 +55,7 @@ namespace EvoScript {
                 result += PublicityToString(Publicity::Public) + "\n";
 
             for (const auto& method : m_methods)
-                result += Tools::TabString(method.ToString()) + "\n";
+                result += Tools::TabString(method.ToString(m_inherit.empty() ? "" : m_inherit[0].m_name)) + "\n";
 
             result += "};";
 

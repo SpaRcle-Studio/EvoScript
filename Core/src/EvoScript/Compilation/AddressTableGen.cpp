@@ -6,12 +6,12 @@
 #include <EvoScript/Tools/FileSystem.h>
 #include "EvoScript/Compilation/AddressTableGen.h"
 
-bool EvoScript::AddressTableGen::RegisterClass(
+bool EvoScript::AddressTableGen::RegisterNewClass(
         const std::string &name,
         const std::string &header,
         const std::vector<Property> &properties,
         const std::set<std::string> &includes,
-        const std::set<InheritClass>& inherit)
+        const std::vector<InheritClass>& inherit)
 {
     if (auto f = m_classes.find(name); f != m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterClass() : class \"" + name + "\" is already exists!");
@@ -27,12 +27,11 @@ bool EvoScript::AddressTableGen::RegisterClass(
     };
 
     if (auto f = m_headers.find(header); f != m_headers.end()) { // add in exists header
-        m_headers[header].m_classes[name] = _class;
-        m_headers[header].m_includes      = Tools::Merge<std::string>(m_headers[header].m_includes, includes);
+        m_headers[header].m_classes.emplace_back(_class);
+        m_headers[header].m_includes = Tools::Merge<std::string>(m_headers[header].m_includes, includes);
     }
     else { // create new header
-        std::map<std::string, Class> m = { { name, _class } };
-        m_headers[header] = { header, includes, m };
+        m_headers[header] = { header, includes, { }, { _class } };
     }
 
     return true;
@@ -44,7 +43,8 @@ bool EvoScript::AddressTableGen::RegisterMethod(
     const std::string &methodName,
     const std::string &returnType,
     const std::vector<std::string>& argTypes,
-    MethodType type)
+    MethodType type,
+    const std::string& _overrideClass)
 {
     if (auto _class = m_classes.find(className); _class == m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterMethod() : class \"" + className + "\" isn't exists!");
@@ -52,16 +52,17 @@ bool EvoScript::AddressTableGen::RegisterMethod(
     }
     else {
         Method method = {
-            .m_pointer = functionPrt,
-            .m_name    = methodName,
-            .m_class   = className,
-            .m_return  = returnType,
-            .m_args    = argTypes,
-            .m_type    = type
+            .m_pointer  = functionPrt,
+            .m_name     = methodName,
+            .m_class    = className,
+            .m_return   = returnType,
+            .m_args     = argTypes,
+            .m_type     = type,
+            .m_override = _overrideClass,
         };
 
         auto& [key, header] = *_class;
-        m_headers[header].m_classes[className].m_methods.emplace_back(method);
+        m_headers[header].FindClass(className)->m_methods.emplace_back(method);
 
         return true;
     }
@@ -82,6 +83,27 @@ bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
 
         file.close();
     }
+
+    return true;
+}
+
+bool EvoScript::AddressTableGen::RegisterEnum(
+        const std::string &name,
+        const std::string &header,
+        bool asClass,
+        const std::vector<std::pair<std::string, int32_t>>& values)
+{
+    EvoEnum evoEnum = {
+            .m_name = name,
+            .m_header = header,
+            .m_asClass = asClass,
+            .m_values = values
+    };
+
+    if (auto f = m_headers.find(header); f != m_headers.end()) // add in exists header
+        m_headers[header].m_enums.emplace_back(evoEnum);
+    else // create new header
+        m_headers[header] = { header, { }, { evoEnum }, { } };
 
     return true;
 }

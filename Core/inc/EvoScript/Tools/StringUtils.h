@@ -23,6 +23,11 @@ namespace EvoScript::Tools {
         return str.substr(0, count);
     }
 
+    inline static std::string ReadTo(const std::string& str, char c) {
+        std::string s = str.substr(0, str.find(c));
+        return s;
+    }
+
     static std::string ToUpper(std::string str) {
         for (char& i : str)
             i = (char)toupper(i);
@@ -91,6 +96,13 @@ namespace EvoScript::Tools {
         std::reverse(result.begin(), result.end());
 
         return result;
+    }
+
+    static std::vector<std::string> GetArgs(const std::string& str) {
+        std::string args = Tools::ReadTo(str, ')');
+        args = EvoScript::Tools::DeleteSymbolsInStr(args, "()");
+        std::vector<std::string> strArgs = EvoScript::Tools::RemoveFirstSpaces(EvoScript::Tools::Split(args));
+        return strArgs;
     }
 }
 

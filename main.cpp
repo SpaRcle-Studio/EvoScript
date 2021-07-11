@@ -3,15 +3,19 @@
 #include <EvoScript/Compilation/Compiler.h>
 #include <EvoScript/Compilation/AddressTableGen.h>
 
-class Parent {
-public:
-    virtual void PrintHello() { }
-    int abc;
-};
+namespace NS {
+    class Parent {
+    public:
+        int abc{};
+        std::string str32;
 
-class SimpleClass : public Parent {
+        virtual void PrintHello() {}
+    };
+}
+
+class SimpleClass : public NS::Parent {
 private:
-    int number = 20;
+    int number{};
 public:
     std::string str;
     std::vector<int> v;
@@ -47,6 +51,19 @@ public:
     }
 };
 
+class Pointer {
+public:
+    SimpleClass* ptr = nullptr;
+public:
+    std::string GetString() {
+        return ptr->GetString();
+    }
+
+    void Print(const char* str) {
+        ptr->Print(str);
+    }
+};
+
 int main() {
     EvoScript::Tools::ESDebug::Log   = [](const std::string& msg) { std::cout << "[LOG] "   << msg << std::endl; };
     EvoScript::Tools::ESDebug::Info  = [](const std::string& msg) { std::cout << "[INFO] "  << msg << std::endl; };
@@ -55,29 +72,43 @@ int main() {
 
     auto* address = new EvoScript::AddressTableGen();
 
-    address->RegisterClass("Parent", "Header", {
-            { "int", "abc",    EvoScript::Public  }
+    address->RegisterEnum("SomeEnum", "Header", true, {
+            { "first", 0 },
+            { "second", 1 },
+            { "third", 2 },
     });
-    ESRegisterVirtualMethod(address, Parent, PrintHello, void, ())
 
-    address->RegisterClass("SimpleClass", "Header", {
+    address->RegisterNewClass("Pointer", "Header", {
+            { "void*", "self", EvoScript::Private }
+    });
+    ESRegisterMethod(::, address, Pointer, GetString, std::string, ())
+    ESRegisterMethod(::, address, Pointer, Print, void, (const char*))
+
+    address->RegisterNewClass("Parent", "Header", {
+            {"int",         "abc",   EvoScript::Public},
+            {"std::string", "str32", EvoScript::Public},
+    });
+    ESRegisterVirtualMethod(NS::, address, Parent, PrintHello, void, ())
+
+    address->RegisterNewClass("SimpleClass", "Header", {
         { "int",         "number", EvoScript::Private },
-        { "std::string", "str",    EvoScript::Public  }
+        { "std::string", "str",    EvoScript::Public  },
+        { "std::vector<int>", "v",    EvoScript::Public  },
     },
     {
         "string", "iostream", "vector"
     },
     {
-        EvoScript::InheritClass { "Parent", EvoScript::Public }
+        EvoScript::InheritClass { "Parent", EvoScript::Public },
     });
-    ESRegisterOverrideMethod(address, SimpleClass, PrintHello, void, ())
-    ESRegisterStaticMethod(address, SimpleClass, StaticMethod, void, ())
-    ESRegisterMethod(address, SimpleClass, Print, void, (const char*))
-    ESRegisterMethod(address, SimpleClass, Summ, int, (int, int))
-    ESRegisterMethod(address, SimpleClass, GetNumber, int, ())
-    ESRegisterMethod(address, SimpleClass, GetString, std::string, ())
-    ESRegisterMethod(address, SimpleClass, GetVector, std::vector<int>, ())
-    ESRegisterMethod(address, SimpleClass, Add, void, (int))
+    ESRegisterMethod(::, address, SimpleClass, Summ, int, (int, int))
+    ESRegisterOverrideMethod(::, address, SimpleClass, PrintHello, void, (), "Parent")
+    ESRegisterMethod(::, address, SimpleClass, GetString, std::string, ())
+    ESRegisterMethod(::, address, SimpleClass, Add, void, (int))
+    ESRegisterMethod(::, address, SimpleClass, GetVector, std::vector<int>, ())
+    ESRegisterMethod(::, address, SimpleClass, GetNumber, int, ())
+    ESRegisterMethod(::, address, SimpleClass, Print, void, (const char*))
+    ESRegisterStaticMethod(::, address, SimpleClass, StaticMethod, void, ())
 
     address->Save(R"(J:\C++\EvoScript\UnitTests\Scripts\Library\)");
 
@@ -93,6 +124,12 @@ int main() {
     auto simple = new SimpleClass();
     simple->str = "aboba";
     fun(simple);
+
+    auto* ptr = new Pointer();
+    ptr->ptr = simple;
+    typedef void(*Process2FnPtr)(Pointer*);
+    auto fun2 = script->GetState()->GetFunction<Process2FnPtr>("Process2");
+    fun2(ptr);
 
     script->Awake();
     script->Start();

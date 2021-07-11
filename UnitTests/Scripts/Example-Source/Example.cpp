@@ -21,6 +21,12 @@ EXTERN_DLL_EXPORT void Process(SimpleClass* simpleClass) {
     std::cout << simpleClass->GetString() << std::endl;
 }
 
+
+EXTERN_DLL_EXPORT void Process2(Pointer* ptr) {
+    std::cout << ptr->GetString() << std::endl;
+    ptr->Print("POINTER");
+}
+
 EXTERN_DLL_EXPORT void Awake() {
     std::cout << "AWAKE" << std::endl;
 

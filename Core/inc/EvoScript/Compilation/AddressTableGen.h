@@ -10,10 +10,39 @@
 #include <EvoScript/Compilation/EvoClass.h>
 
 namespace EvoScript {
+    struct EvoEnum {
+        std::string m_name;
+        std::string m_header;
+        bool        m_asClass;
+        std::vector<std::pair<std::string, int32_t>> m_values;
+
+        [[nodiscard]] std::string ToString() const {
+            std::string result = "enum ";
+
+            if (m_asClass)
+                result += "class ";
+            result += m_name + " {\n\t";
+
+            for (const auto& [name, value] : m_values)
+                result += name + " = " + std::to_string(value) + ", ";
+
+            result += "\n};";
+
+            return result;
+        }
+    };
+
     struct Header {
-        std::string                  m_name;
-        std::set<std::string>        m_includes;
-        std::map<std::string, Class> m_classes;
+        std::string           m_name;
+        std::set<std::string> m_includes;
+        std::vector<EvoEnum>  m_enums;
+        std::vector<Class>    m_classes;
+
+        Class* FindClass(const std::string& name) {
+            for (auto& _class : m_classes)
+                if (_class.m_name == name)
+                    return &_class;
+        }
 
         [[nodiscard]] std::string GetIncludes() const {
             std::string result;
@@ -33,8 +62,11 @@ namespace EvoScript {
 
             result += GetIncludes() + "\n";
 
+            for (const auto& _enum : m_enums)
+                result += _enum.ToString() + "\n\n";
+
             for (const auto& _class : m_classes)
-                result += _class.second.ToString() += "\n\n";
+                result += _class.ToString() + "\n\n";
 
             result += "#endif";
 
@@ -68,51 +100,46 @@ namespace EvoScript {
                 const std::string& methodName,
                 const std::string& returnType,
                 const std::vector<std::string>& argTypes,
-                MethodType type);
+                MethodType type,
+                const std::string& _overrideClass = "");
 
-        bool RegisterClass(
+        bool RegisterNewClass(
                 const std::string& name,
                 const std::string& header,
                 const std::vector<Property>& properties,
                 const std::set<std::string>& includes = {},
-                const std::set<InheritClass>& inherit = {});
+                const std::vector<InheritClass>& inherit = {});
+
+        bool RegisterEnum(
+                const std::string& name,
+                const std::string& header,
+                bool asClass,
+                const std::vector<std::pair<std::string, int32_t>>& values);
     };
 }
 
-#define ESRegisterVirtualMethod(_addrTable, _class, _method, _returnType, _args) {                  \
-    _returnType (_class::*_ptr)_args = &_class::_method;                                            \
+#define ESRegisterVirtualMethod(_ns, _addrTable, _class, _method, _returnType, _args) {             \
+    _returnType (_ns _class::*_ptr)_args = &_ns _class::_method;                                    \
     void* pp = *reinterpret_cast<void**>(&_ptr);                                                    \
-    std::vector<std::string> strArgs =                                                              \
-        EvoScript::Tools::RemoveFirstSpaces(                                                        \
-            EvoScript::Tools::Split(                                                                \
-                EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));                               \
+    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                           \
     _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::Virtual); } \
 
-#define ESRegisterOverrideMethod(_addrTable, _class, _method, _returnType, _args) {                  \
-    _returnType (_class::*_ptr)_args = &_class::_method;                                             \
-    void* pp = *reinterpret_cast<void**>(&_ptr);                                                     \
-    std::vector<std::string> strArgs =                                                               \
-        EvoScript::Tools::RemoveFirstSpaces(                                                         \
-            EvoScript::Tools::Split(                                                                 \
-                EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));                                \
-    _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::Override); } \
+#define ESRegisterOverrideMethod(_ns, _addrTable, _class, _method, _returnType, _args, _override) {             \
+    _returnType (_ns _class::*_ptr)_args = &_ns _class::_method;                                                \
+    void* pp = *reinterpret_cast<void**>(&_ptr);                                                                \
+    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                                       \
+    _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::Override, _override); } \
 
-#define ESRegisterMethod(_addrTable, _class, _method, _returnType, _args) {                        \
-    _returnType (_class::*_ptr)_args = &_class::_method;                                           \
+#define ESRegisterMethod(_ns, _addrTable, _class, _method, _returnType, _args) {                   \
+    _returnType (_ns _class::*_ptr)_args = &_ns _class::_method;                                   \
     void* pp = *reinterpret_cast<void**>(&_ptr);                                                   \
-    std::vector<std::string> strArgs =                                                             \
-        EvoScript::Tools::RemoveFirstSpaces(                                                       \
-            EvoScript::Tools::Split(                                                               \
-                EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));                              \
+    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                          \
     _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::Normal); } \
 
-#define ESRegisterStaticMethod(_addrTable, _class, _method, _returnType, _args) {                  \
-    _returnType (*_ptr)_args = &_class::_method;                                                   \
+#define ESRegisterStaticMethod(_ns, _addrTable, _class, _method, _returnType, _args) {             \
+    _returnType (*_ptr)_args = &_ns _class::_method;                                               \
     void* pp = *reinterpret_cast<void**>(&_ptr);                                                   \
-    std::vector<std::string> strArgs =                                                             \
-        EvoScript::Tools::RemoveFirstSpaces(                                                       \
-            EvoScript::Tools::Split(                                                               \
-                EvoScript::Tools::DeleteSymbolsInStr(#_args, "()")));                              \
+    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                          \
     _addrTable->RegisterMethod(pp, #_class, #_method, #_returnType, strArgs, EvoScript::Static); } \
 
 #endif //EVOSCRIPT_ADDRESSTABLEGEN_H
