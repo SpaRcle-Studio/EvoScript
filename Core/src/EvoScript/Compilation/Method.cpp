@@ -30,13 +30,16 @@ std::string EvoScript::Method::ToString(const std::string& inheritClass) const  
         case Static:
             result += "static " + m_return + " " + m_name + "(" + strArgs + ") {\n";
             break;
+        case VirtualOverride:
+            result += "virtual " + m_return + " " + m_name + "(" + strArgs + ") override {\n";
+            break;
     }
 
     const void *address = static_cast<const void *>(m_pointer);
     std::stringstream ss;
     ss << address;
 
-    if (m_type == Override || m_type == Normal || m_type == Virtual) {
+    if (m_type == Override || m_type == Normal || m_type == Virtual || m_type == VirtualOverride) {
         result += "\tvoid* voidPtr = reinterpret_cast<void*>(0x" + ss.str() + ");\n";
         if (m_override.empty()) {
             if (inheritClass.empty())

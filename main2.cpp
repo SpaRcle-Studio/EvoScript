@@ -19,6 +19,10 @@ public:
     virtual void VirtualA() {
         std::cout << "virtual" << std::endl;
     }
+
+    static void foo() {
+
+    }
 };
 
 class B {
@@ -27,7 +31,13 @@ public:
         b = i;
     }
     int b = 2;
+    int b2 = 2;
     std::string str = "some";
+
+    static int bar() {
+        return 3;
+    }
+
     inline void PrintB() {
         std::cout << b << std::endl;
     }
@@ -65,24 +75,24 @@ int main() {
             { "std::string", "lol", EvoScript::Public },
             { "std::string", "lol2", EvoScript::Public },
     });
-    ESRegisterMethod(::, address, A, PrintA, void, ())
-    ESRegisterVirtualMethod(::, address, A, OverPrintA, void, ())
-    ESRegisterVirtualMethod(::, address, A, VirtualA, void, ())
+    ESRegisterMethod(::, EvoScript::Public, address, A, PrintA, void, ())
+    ESRegisterVirtualMethod(::, EvoScript::Public, address, A, OverPrintA, void, ())
+    ESRegisterVirtualMethod(::, EvoScript::Public, address, A, VirtualA, void, ())
 
     address->RegisterNewClass("B", "Header", {
             { "int", "b", EvoScript::Public },
             { "std::string", "str", EvoScript::Public }
     });
-    ESRegisterMethod(::, address, B, PrintB, void, ())
-    ESRegisterVirtualMethod(::, address, B, OverPrintB, void, ())
+    ESRegisterMethod(::, EvoScript::Public, address, B, PrintB, void, ())
+    ESRegisterVirtualMethod(::, EvoScript::Public, address, B, OverPrintB, void, ())
 
     address->RegisterNewClass("C", "Header", {
             { "int", "c", EvoScript::Public }
     },
     { "string" }, { { "A", EvoScript::Public }, { "B", EvoScript::Public } }); //
-    ESRegisterMethod(::, address, C, PrintC, void, () const)
-    ESRegisterOverrideMethod(::, address, C, OverPrintA, void, (), "A")
-    ESRegisterOverrideMethod(::, address, C, OverPrintB, void, (), "B")
+    ESRegisterMethod(::, EvoScript::Public, address, C, PrintC, void, () const)
+    ESRegisterOverrideMethod(::, EvoScript::Public, address, C, OverPrintA, void, (), "A")
+    ESRegisterOverrideMethod(::, EvoScript::Public, address, C, OverPrintB, void, (), "B")
 
     address->Save(R"(J:\C++\GameEngine\Engine\Dependences\Framework\Depends\EvoScript\UnitTests\Scripts\Library\)");
 

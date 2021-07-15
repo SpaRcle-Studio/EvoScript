@@ -31,7 +31,7 @@ bool EvoScript::AddressTableGen::RegisterNewClass(
         m_headers[header].m_includes = Tools::Merge<std::string>(m_headers[header].m_includes, includes);
     }
     else { // create new header
-        m_headers[header] = { header, includes, { }, { _class } };
+        m_headers[header] = { header, includes, { }, { }, { }, { _class } };
     }
 
     return true;
@@ -44,7 +44,8 @@ bool EvoScript::AddressTableGen::RegisterMethod(
     const std::string &returnType,
     const std::vector<std::string>& argTypes,
     MethodType type,
-    const std::string& _overrideClass)
+    const std::string& _overrideClass,
+    Publicity publicity)
 {
     if (auto _class = m_classes.find(className); _class == m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterMethod() : class \"" + className + "\" isn't exists!");
@@ -59,6 +60,7 @@ bool EvoScript::AddressTableGen::RegisterMethod(
             .m_args     = argTypes,
             .m_type     = type,
             .m_override = _overrideClass,
+            .m_public   = publicity,
         };
 
         auto& [key, header] = *_class;
@@ -103,7 +105,30 @@ bool EvoScript::AddressTableGen::RegisterEnum(
     if (auto f = m_headers.find(header); f != m_headers.end()) // add in exists header
         m_headers[header].m_enums.emplace_back(evoEnum);
     else // create new header
-        m_headers[header] = { header, { }, { evoEnum }, { } };
+        m_headers[header] = { header, { /* includes */ }, { /* incomplete */ }, { }, { evoEnum }, { } };
+
+    return true;
+}
+
+bool EvoScript::AddressTableGen::AddIncompleteType(const std::string &className, const std::string &header) {
+    if (auto f = m_headers.find(header); f != m_headers.end()) // add in exists header
+        m_headers[header].m_incompleteTypes.emplace_back(className);
+    else // create new header
+        m_headers[header] = { header, { /* includes */ }, { className }, { }, { }, { } };
+
+    return true;
+}
+
+bool EvoScript::AddressTableGen::RegisterTypedef(
+        const std::string &name,
+        const std::string& header,
+        const std::string &value)
+{
+    std::string _typedef = "typedef " + value + " " + name + ";\n";
+    if (auto f = m_headers.find(header); f != m_headers.end()) // add in exists header
+        m_headers[header].m_typedefs.emplace_back(_typedef);
+    else // create new header
+        m_headers[header] = { header, { /* includes */ }, { /*incomplete*/ }, { _typedef }, { /*enums*/ }, { /*classes*/ } };
 
     return true;
 }

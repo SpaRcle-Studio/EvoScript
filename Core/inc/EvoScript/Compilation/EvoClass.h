@@ -51,11 +51,19 @@ namespace EvoScript {
                 result += "\t" + property.m_type + " " + property.m_name + ";\n";
             }
 
-            if (!m_methods.empty())
-                result += PublicityToString(Publicity::Public) + "\n";
+            if (!m_methods.empty()) {
+                currentPub = m_methods[0].m_public;
+                result += PublicityToString(currentPub) + "\n";
+            }
 
-            for (const auto& method : m_methods)
+            for (const auto& method : m_methods) {
+                if (currentPub != method.m_public) {
+                    currentPub = method.m_public;
+                    result += PublicityToString(currentPub) + "\n";
+                }
+
                 result += Tools::TabString(method.ToString(m_inherit.empty() ? "" : m_inherit[0].m_name)) + "\n";
+            }
 
             result += "};";
 

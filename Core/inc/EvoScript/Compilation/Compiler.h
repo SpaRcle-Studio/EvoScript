@@ -23,22 +23,17 @@ namespace EvoScript {
         Compiler() = default;
         ~Compiler() = default;
     private:
-        std::string m_generator     = "None";
-        std::string m_cachePath     = "None";
-        std::mutex  m_mutex         = std::mutex();
+        std::string  m_generator     = "None";
+        std::string  m_cachePath     = "None";
+        std::mutex   m_mutex         = std::mutex();
 
-        ModuleCopies m_moduleCopies = ModuleCopies();
-    public:
-        std::vector<Script*> m_scripts = std::vector<Script*>();
+        ModuleCopies m_moduleCopies  = ModuleCopies();
     private:
         uint32_t FindFreeID(const std::string& pathToModule);
     public:
         IState* AllocateState(const std::string& path);
 
         bool Compile(Script* script);
-
-        bool RegisterScript(Script* script);
-        bool RemoveScript(Script* script);
     public:
         static Compiler* Create(const std::string& generator, const std::string& cachePath);
         void Destroy();

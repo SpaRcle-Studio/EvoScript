@@ -18,7 +18,7 @@ namespace EvoScript {
     };
 
     enum MethodType {
-        Normal, Virtual, Override, Static
+        Normal, Virtual, Override, Static, VirtualOverride
     };
 
     static std::string PublicityToString(Publicity publicity, bool colon = true) {
@@ -49,6 +49,7 @@ namespace EvoScript {
         std::vector<std::string> m_args;
         MethodType               m_type;
         std::string              m_override; // Метод какого класса переопределяется
+        Publicity                m_public;
 
         [[nodiscard]] std::string ToString(const std::string& inheritClass) const;
     };

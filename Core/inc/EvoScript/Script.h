@@ -61,6 +61,7 @@ namespace EvoScript {
         bool Start() { ES_CALL_DLL(m_start) }
         bool Close() { ES_CALL_DLL(m_close) }
         bool Update(float dt) { ES_CALL_DLL_ARGS(m_update, (dt)) }
+        bool FixedUpdate() { ES_CALL_DLL(m_fixed) }
     public:
         static Script* Allocate(const std::string& name, Compiler* compiler, bool needReCompile) {
             return new Script(name, compiler, needReCompile);

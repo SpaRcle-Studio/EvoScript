@@ -48,7 +48,7 @@ bool EvoScript::Script::HookFunctions() {
     m_start  = m_state->GetFunction<Typedefs::StartFnPtr>("Start");
     m_close  = m_state->GetFunction<Typedefs::CloseFnPtr>("Close");
     m_update = m_state->GetFunction<Typedefs::UpdateFnPtr>("Update");
-    m_fixed  = m_state->GetFunction<Typedefs::FixedUpdateFnPtr>("Fixed");
+    m_fixed  = m_state->GetFunction<Typedefs::FixedUpdateFnPtr>("FixedUpdate");
 
     return true;
 }

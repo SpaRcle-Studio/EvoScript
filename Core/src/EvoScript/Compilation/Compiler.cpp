@@ -5,6 +5,7 @@
 #include "EvoScript/Compilation/Compiler.h"
 
 #include <EvoScript/Tools/Randomizer.h>
+#include <iostream>
 
 EvoScript::Compiler *EvoScript::Compiler::Create(const std::string& generator, const std::string& cachePath) {
     if (static Compiler* compiler = nullptr; compiler) {
@@ -16,6 +17,11 @@ EvoScript::Compiler *EvoScript::Compiler::Create(const std::string& generator, c
 
         compiler->m_generator = Tools::FixPath(generator);
         compiler->m_cachePath = Tools::FixPath(cachePath);
+
+        for (const auto& file : fs::directory_iterator(compiler->m_cachePath + "/Modules/")) {
+            if (file.path().extension() == IState::Extension)
+                Tools::RemoveFile(file.path().string());
+        }
 
         return compiler;
     }
@@ -38,6 +44,11 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
 
         if (Tools::FileExists(module))
             Tools::RemoveFile(module);
+
+        for (const auto& file : fs::directory_iterator(build + (script->IsDebug() ? "Debug" : "Release"))) {
+            if (file.path().extension() == IState::Extension)
+                Tools::RemoveFile(file.path().string());
+        }
 
         Tools::CreatePath(build);
 
@@ -75,14 +86,6 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
 
 void EvoScript::Compiler::Destroy() {
 
-}
-
-bool EvoScript::Compiler::RegisterScript(EvoScript::Script *script) {
-    return false;
-}
-
-bool EvoScript::Compiler::RemoveScript(EvoScript::Script *script) {
-    return false;
 }
 
 EvoScript::IState *EvoScript::Compiler::AllocateState(const std::string &path) {
