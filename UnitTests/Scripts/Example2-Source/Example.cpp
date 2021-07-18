@@ -5,9 +5,7 @@
 #include <iostream>
 #include "../Library/Header.h"
 
-#define EXTERN_DLL_EXPORT extern "C" __declspec(dllexport)
-
-EXTERN_DLL_EXPORT void Process(C* c) {
+EXTERN void Process(C* c) {
     c->PrintA();
     c->PrintB();
     c->PrintC();

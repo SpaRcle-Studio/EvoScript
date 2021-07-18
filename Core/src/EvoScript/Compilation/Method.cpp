@@ -35,12 +35,9 @@ std::string EvoScript::Method::ToString(const std::string& inheritClass) const  
             break;
     }
 
-    const void *address = static_cast<const void *>(m_pointer);
-    std::stringstream ss;
-    ss << address;
+    result += "\tvoid* voidPtr = g_methodPointers[" + std::to_string(m_id) + "];\n";
 
     if (m_type == Override || m_type == Normal || m_type == Virtual || m_type == VirtualOverride) {
-        result += "\tvoid* voidPtr = reinterpret_cast<void*>(0x" + ss.str() + ");\n";
         if (m_override.empty()) {
             if (inheritClass.empty())
                 result += "\ttypedef " + m_return + " (" + m_class + "::*ClassPtr)(" + strArgs + ");\n";
@@ -52,7 +49,6 @@ std::string EvoScript::Method::ToString(const std::string& inheritClass) const  
         result += "\tauto origPtr = *reinterpret_cast<ClassPtr*>(&voidPtr);\n";
         result += "\treturn (*this.*origPtr)(" + argNames + ");\n";
     } else if (m_type == Static) {
-        result += "\tvoid* voidPtr = reinterpret_cast<void*>(0x" + ss.str() + ");\n";
         result += "\ttypedef " + m_return + " (*ClassPtr)(" + strArgs + ");\n";
         result += "\tauto origPtr = *reinterpret_cast<ClassPtr*>(&voidPtr);\n";
         result += "\treturn (*origPtr)(" + argNames + ");\n";

@@ -97,7 +97,9 @@ namespace EvoScript {
     private:
         //! key - class name, value - header name
         std::map<std::string, std::string> m_classes;
-        std::map<std::string, Header> m_headers;
+        std::map<std::string, Header>      m_headers;
+        std::vector<void*>                 m_methodPointers;
+        inline static const std::string    m_standardLib = "Standard/Addresses.h";
     public:
         [[nodiscard]] Header GetHeader(const std::string& name) const {
             if (auto f = m_headers.find(name); f == m_headers.end()) {
@@ -107,7 +109,11 @@ namespace EvoScript {
                 return m_headers.at(name);
         }
         bool Save(const std::string& libFolder);
+    private:
+        static bool GenerateStandardLibrary(const std::string& libFolder);
     public:
+        [[nodiscard]] void** GetAddresses() const { return (void**)m_methodPointers.data(); }
+
         bool RegisterMethod(
                 void* functionPrt,
                 const std::string& className,
@@ -122,7 +128,7 @@ namespace EvoScript {
                 const std::string& name,
                 const std::string& header,
                 const std::vector<Property>& properties,
-                const std::set<std::string>& includes = {},
+                std::set<std::string> includes = {},
                 const std::vector<InheritClass>& inherit = {});
 
         bool RegisterEnum(

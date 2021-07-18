@@ -98,7 +98,7 @@ int main() {
 
     auto* compiler = EvoScript::Compiler::Create("Visual Studio 16 2019", R"(J:\C++\EvoScript\Cache)");
 
-    auto* script = EvoScript::Script::Allocate("Just script", compiler, true);
+    auto* script = EvoScript::Script::Allocate("Just script", compiler, address->GetAddresses(), true);
     if (!script->Load(R"(J:\C++\GameEngine\Engine\Dependences\Framework\Depends\EvoScript\UnitTests\Scripts\Example2)")) {
         return -1;
     }

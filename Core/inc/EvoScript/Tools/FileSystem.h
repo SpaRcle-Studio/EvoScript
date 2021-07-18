@@ -33,7 +33,7 @@ namespace EvoScript::Tools {
         return std::remove(path.c_str());
     }
 
-    static bool CreateDirectory(const std::string& directory) {
+    static bool CreateFolder(const std::string& directory) {
         return fs::create_directory(directory);
     }
 
@@ -58,7 +58,7 @@ namespace EvoScript::Tools {
         auto pos = path.find('/', offset);
         if (pos != std::string::npos) {
             auto dir = Tools::Read(path, pos);
-            Tools::CreateDirectory(dir);
+            Tools::CreateFolder(dir);
             CreatePath(path, pos + 1);
         }
     }

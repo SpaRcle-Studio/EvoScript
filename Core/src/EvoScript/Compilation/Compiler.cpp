@@ -102,7 +102,7 @@ ret:
 
         std::string module = m_cachePath + "/Modules/" + name + "-" + std::to_string(id) + IState::Extension;
 
-        Tools::CreateDirectory(m_cachePath + "/Modules");
+        Tools::CreateFolder(m_cachePath + "/Modules");
         Tools::Copy(path + IState::Extension, module);
 
         return IState::Allocate(module);

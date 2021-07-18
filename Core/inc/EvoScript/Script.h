@@ -23,20 +23,22 @@ namespace EvoScript {
     public:
         Script(const Script&) = delete;
     private:
-        Script(std::string name, Compiler* compiler, bool needReCompile) :
+        Script(std::string name, Compiler* compiler, void** methodPointers, bool needReCompile) :
             m_name(std::move(name)),
             m_compiler(compiler),
+            m_methodPointers(methodPointers),
             m_needReCompile(needReCompile) { }
         ~Script() = default;
     private:
         //! name it isn't path! It is just name.
-        std::string m_name          = "None";
+        std::string m_name           = "None";
         //! path to original module file
-        std::string m_path          = "None";
-        bool        m_needReCompile = false;
-        Compiler*   m_compiler      = nullptr;
+        std::string m_path           = "None";
+        bool        m_needReCompile  = false;
+        Compiler*   m_compiler       = nullptr;
+        void**      m_methodPointers = nullptr;
 
-        IState*     m_state         = nullptr;
+        IState*     m_state          = nullptr;
 
 #ifdef NDEBUG
         const bool  m_debug         = false;
@@ -63,8 +65,8 @@ namespace EvoScript {
         bool Update(float dt) { ES_CALL_DLL_ARGS(m_update, (dt)) }
         bool FixedUpdate() { ES_CALL_DLL(m_fixed) }
     public:
-        static Script* Allocate(const std::string& name, Compiler* compiler, bool needReCompile) {
-            return new Script(name, compiler, needReCompile);
+        static Script* Allocate(const std::string& name, Compiler* compiler, void** methodPointers, bool needReCompile) {
+            return new Script(name, compiler, methodPointers, needReCompile);
         }
     public:
         bool Load(const std::string& path);

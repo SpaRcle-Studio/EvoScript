@@ -10,9 +10,11 @@ bool EvoScript::AddressTableGen::RegisterNewClass(
         const std::string &name,
         const std::string &header,
         const std::vector<Property> &properties,
-        const std::set<std::string> &includes,
+        std::set<std::string> includes,
         const std::vector<InheritClass>& inherit)
 {
+    includes.insert(m_standardLib);
+
     if (auto f = m_classes.find(name); f != m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterClass() : class \"" + name + "\" is already exists!");
         return false;
@@ -48,12 +50,14 @@ bool EvoScript::AddressTableGen::RegisterMethod(
     Publicity publicity)
 {
     if (auto _class = m_classes.find(className); _class == m_classes.end()) {
-        ES_ERROR("AddressTableGen::RegisterMethod() : class \"" + className + "\" isn't exists!");
+        ES_ERROR("AddressTableGen::RegisterMethod() : class \"" + className + "\" isn't exists!")
         return false;
     }
     else {
+        this->m_methodPointers.emplace_back(functionPrt);
+
         Method method = {
-            .m_pointer  = functionPrt,
+            .m_id       = (uint32_t)(m_methodPointers.size() - 1),
             .m_name     = methodName,
             .m_class    = className,
             .m_return   = returnType,
@@ -73,6 +77,10 @@ bool EvoScript::AddressTableGen::RegisterMethod(
 bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
     Tools::CreatePath(Tools::FixPath(libFolder));
 
+    if (!GenerateStandardLibrary(libFolder)) {
+        return false;
+    }
+
     for (const auto& [key, header] : m_headers) {
         std::string path = libFolder + key + ".h";
         std::ofstream file(path);
@@ -85,6 +93,34 @@ bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
 
         file.close();
     }
+
+    return true;
+}
+
+bool EvoScript::AddressTableGen::GenerateStandardLibrary(const std::string& libFolder) {
+    Tools::CreatePath(Tools::FixPath(libFolder + "Standard/"));
+
+    std::string path = libFolder + m_standardLib;
+    std::ofstream file(path);
+    if (file.is_open()) {
+        file << "#ifndef EVOSCRIPTLIB_ADDRESSES_H\n";
+        file << "#define EVOSCRIPTLIB_ADDRESSES_H\n\n";
+
+        file << "#define EXTERN extern \"C\" __declspec(dllexport)\n\n";
+
+        file << "void** g_methodPointers; \n\n";
+
+        file << "EXTERN void Init(void** methodPointers) {\n";
+        file << "\tg_methodPointers = methodPointers;\n";
+        file << "}\n\n";
+
+        file << "#endif\n";
+    } else {
+        ES_ERROR("AddressTableGen::GenerateStandardLibrary() : failed to open file! \n\tPath: " + path);
+        return false;
+    }
+
+    file.close();
 
     return true;
 }

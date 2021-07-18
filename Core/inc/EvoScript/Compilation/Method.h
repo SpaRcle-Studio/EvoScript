@@ -42,7 +42,7 @@ namespace EvoScript {
     };
 
     struct Method {
-        void*                    m_pointer;
+        uint32_t                 m_id;
         std::string              m_name;
         std::string              m_class;
         std::string              m_return;

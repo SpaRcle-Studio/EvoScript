@@ -44,6 +44,10 @@ bool EvoScript::Script::HookFunctions() {
         return false;
     }
 
+    auto init = m_state->GetFunction<Typedefs::InitFnPtr>("Init");
+    if (init)
+        init(m_methodPointers);
+
     m_awake  = m_state->GetFunction<Typedefs::AwakeFnPtr>("Awake");
     m_start  = m_state->GetFunction<Typedefs::StartFnPtr>("Start");
     m_close  = m_state->GetFunction<Typedefs::CloseFnPtr>("Close");
