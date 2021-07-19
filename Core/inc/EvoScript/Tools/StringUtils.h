@@ -28,6 +28,11 @@ namespace EvoScript::Tools {
         return s;
     }
 
+    inline static std::string ReadToLast(const std::string& str, char c) {
+        std::string s = str.substr(0, str.rfind(c));
+        return s;
+    }
+
     static std::string ToUpper(std::string str) {
         for (char& i : str)
             i = (char)toupper(i);
