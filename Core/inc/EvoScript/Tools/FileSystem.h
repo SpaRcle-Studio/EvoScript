@@ -16,6 +16,13 @@
 namespace fs = std::experimental::filesystem;
 
 namespace EvoScript::Tools {
+    static std::vector<std::string> GetAllFilesInDir(const std::string& path) {
+        auto files = std::vector<std::string>();
+        for (const auto & entry : fs::directory_iterator(path))
+            files.emplace_back(entry.path().string());
+        return files;
+    }
+
     static std::vector<std::string> GetAllFilesInDirWithExt(const std::string& path, const std::string& ext) {
         auto files = std::vector<std::string>();
         for (const auto & entry : fs::directory_iterator(path))

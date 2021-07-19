@@ -51,6 +51,7 @@ namespace EvoScript {
         Typedefs::CloseFnPtr       m_close  = nullptr;
         Typedefs::UpdateFnPtr      m_update = nullptr;
         Typedefs::FixedUpdateFnPtr m_fixed  = nullptr;
+        Typedefs::OnGUIFnPtr       m_onGUI  = nullptr;
     private:
         bool HookFunctions();
     public:
@@ -64,6 +65,7 @@ namespace EvoScript {
         bool Close() { ES_CALL_DLL(m_close) }
         bool Update(float dt) { ES_CALL_DLL_ARGS(m_update, (dt)) }
         bool FixedUpdate() { ES_CALL_DLL(m_fixed) }
+        bool OnGUI() { ES_CALL_DLL(m_onGUI) }
     public:
         static Script* Allocate(const std::string& name, Compiler* compiler, void** methodPointers, bool needReCompile) {
             return new Script(name, compiler, methodPointers, needReCompile);

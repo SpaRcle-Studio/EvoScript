@@ -8,6 +8,7 @@
 EXTERN void Process(C* c) {
     c->PrintA();
     c->PrintB();
+    c->PrintB();
     c->PrintC();
     c->OverPrintA();
     c->OverPrintB();

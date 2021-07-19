@@ -31,6 +31,29 @@ void EvoScript::Compiler::Free() {
     delete this;
 }
 
+bool EvoScript::Compiler::CheckHash(const std::string& source, const std::string& scriptName, bool debug) {
+    std::string path = Tools::FixPath(m_cachePath + "/Hashes/");
+    std::string fullPath = path + scriptName + ".hash";
+
+    auto currHash = std::pair(debug, Tools::GetHashAllFilesInDir(source));
+
+    if (Tools::FileExists(fullPath)) {
+        auto loadHash = Tools::LoadHashInfo(fullPath);
+        if (Tools::HashEquals(loadHash, currHash))
+            return true;
+        else {
+            Tools::CreatePath(path);
+            Tools::SaveHashInfo(fullPath, currHash);
+        }
+    }
+    else {
+        Tools::CreatePath(path);
+        Tools::SaveHashInfo(fullPath, currHash);
+    }
+
+    return false;
+}
+
 bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
     bool success = false;
 
@@ -42,8 +65,14 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
         auto build  = m_cachePath + "/" + name + "-Build/";
         auto module = path + IState::Extension;
 
-        if (Tools::FileExists(module))
-            Tools::RemoveFile(module);
+        if (Tools::FileExists(module)) {
+            if (CheckHash(source, name, script->IsDebug())) {
+                m_mutex.unlock();
+                return true;
+            }
+            else
+                Tools::RemoveFile(module);
+        }
 
         for (const auto& file : fs::directory_iterator(build + (script->IsDebug() ? "Debug" : "Release"))) {
             if (file.path().extension() == IState::Extension)

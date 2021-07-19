@@ -8,6 +8,7 @@
 #include <EvoScript/Script.h>
 #include <EvoScript/Tools/StringUtils.h>
 #include <EvoScript/Tools/FileSystem.h>
+#include <EvoScript/Tools/HashUtils.h>
 
 #include <mutex>
 #include <map>
@@ -30,6 +31,11 @@ namespace EvoScript {
         ModuleCopies m_moduleCopies  = ModuleCopies();
     private:
         uint32_t FindFreeID(const std::string& pathToModule);
+        /*
+            true - not need recompile
+            false - need recompile
+         */
+        bool CheckHash(const std::string& source, const std::string& scriptName, bool debug);
     public:
         IState* AllocateState(const std::string& path);
 
