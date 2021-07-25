@@ -103,6 +103,9 @@ bool EvoScript::AddressTableGen::GenerateStandardLibrary(const std::string& libF
     std::string path = libFolder + m_standardLib;
     std::ofstream file(path);
     if (file.is_open()) {
+        file << ("//\n// Created by Evo Script code generator on "
+                  + Tools::GetData() + " | Author - Monika\n//\n\n");
+
         file << "#ifndef EVOSCRIPTLIB_ADDRESSES_H\n";
         file << "#define EVOSCRIPTLIB_ADDRESSES_H\n\n";
 

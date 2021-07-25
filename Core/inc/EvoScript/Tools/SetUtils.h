@@ -6,6 +6,7 @@
 #define EVOSCRIPT_SETUTILS_H
 
 #include <set>
+#include <iostream>
 
 namespace EvoScript::Tools {
     template<typename T> std::set<T> Merge(const std::set<T>& s1, const std::set<T>& s2) {
