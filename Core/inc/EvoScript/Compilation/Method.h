@@ -51,7 +51,13 @@ namespace EvoScript {
         std::string              m_override; // Метод какого класса переопределяется
         Publicity                m_public;
 
-        [[nodiscard]] std::string ToString(const std::string& inheritClass) const;
+        std::string              m_stringArgs;
+        std::string              m_argNames;
+
+        void MathArguments();
+        [[nodiscard]] std::string GetTypedef(const std::string& inheritClass) const;
+        [[nodiscard]] std::string GetSetter() const;
+        [[nodiscard]] std::string ToString() const;
     };
 }
 

@@ -104,8 +104,15 @@ namespace EvoScript::Tools {
     }
 
     static std::vector<std::string> GetArgs(const std::string& str) {
-        std::string args = Tools::ReadTo(str, ')');
+        if (str.size() <= 2)
+            return { };
+        //std::string args = Tools::ReadTo(str, ')');
+        auto left = str.find('(');
+        auto right = str.find(')');
+
+        auto args = str.substr(left, right);
         args = EvoScript::Tools::DeleteSymbolsInStr(args, "()");
+
         std::vector<std::string> strArgs = EvoScript::Tools::RemoveFirstSpaces(EvoScript::Tools::Split(args));
         return strArgs;
     }

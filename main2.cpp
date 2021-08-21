@@ -10,11 +10,12 @@
 class A {
 public:
     int a = 1;
+    std::string lol = "lol";
+    std::string lol2 = "lol2";
+
     void PrintA() {
         std::cout << a << std::endl;
     }
-    std::string lol = "lol";
-    std::string lol2 = "lol2";
     virtual void OverPrintA() { }
     virtual void VirtualA() {
         std::cout << "virtual" << std::endl;
@@ -30,15 +31,14 @@ public:
     B(int i) {
         b = i;
     }
+
     int b = 2;
     int b2 = 2;
     std::string str = "some";
 
-    static int bar() {
-        return 3;
-    }
+    //static int bar() { return 3; }
 
-    inline void PrintB() {
+    void PrintB() {
         std::cout << b << std::endl;
     }
     virtual void OverPrintB() { }
@@ -49,7 +49,7 @@ class C : public A, public B {
 public:
     C() : B(22) { }
 
-    inline void PrintC() const {
+    void PrintC() const {
         std::cout << a << std::endl;
         std::cout << b << std::endl;
         std::cout << c << std::endl;
@@ -58,11 +58,14 @@ public:
         std::cout << str << std::endl;
     }
     void OverPrintB() override {
-        std::cout << "sdsdsdsd " << str << " " << a << b << c << std::endl;
+        //std::cout << "sdsdsdsd " << str << " " << a << b << c << std::endl;
+        std::cout << str << std::endl;
     }
 };
 
 int main() {
+    std::cout << "main2\n";
+
     EvoScript::Tools::ESDebug::Log   = [](const std::string& msg) { std::cout << "[LOG] "   << msg << std::endl; };
     EvoScript::Tools::ESDebug::Info  = [](const std::string& msg) { std::cout << "[INFO] "  << msg << std::endl; };
     EvoScript::Tools::ESDebug::Warn  = [](const std::string& msg) { std::cout << "[WARN] "  << msg << std::endl; };
@@ -75,44 +78,42 @@ int main() {
             { "std::string", "lol", EvoScript::Public },
             { "std::string", "lol2", EvoScript::Public },
     });
-    ESRegisterMethod(::, EvoScript::Public, address, A, PrintA, void, ())
-    ESRegisterVirtualMethod(::, EvoScript::Public, address, A, OverPrintA, void, ())
-    ESRegisterVirtualMethod(::, EvoScript::Public, address, A, VirtualA, void, ())
+
+    ESRegisterMethodArg0(::, EvoScript::Public, address, A, PrintA, void)
+    ESRegisterMethodVirtualArg0(::, EvoScript::Public, address, A, OverPrintA, void)
+    ESRegisterMethodVirtualArg0(::, EvoScript::Public, address, A, VirtualA, void)
 
     address->RegisterNewClass("B", "Header", {
             { "int", "b", EvoScript::Public },
+            { "int", "b2", EvoScript::Public },
             { "std::string", "str", EvoScript::Public }
     });
-    ESRegisterMethod(::, EvoScript::Public, address, B, PrintB, void, ())
-    ESRegisterVirtualMethod(::, EvoScript::Public, address, B, OverPrintB, void, ())
+    ESRegisterMethodArg0(::, EvoScript::Public, address, B, PrintB, void)
+    ESRegisterMethodVirtualArg0(::, EvoScript::Public, address, B, OverPrintB, void)
 
     address->RegisterNewClass("C", "Header", {
             { "int", "c", EvoScript::Public }
     },
-    { "string" }, { { "A", EvoScript::Public }, { "B", EvoScript::Public } }); //
-    ESRegisterMethod(::, EvoScript::Public, address, C, PrintC, void, () const)
-    ESRegisterOverrideMethod(::, EvoScript::Public, address, C, OverPrintA, void, (), "A")
-    ESRegisterOverrideMethod(::, EvoScript::Public, address, C, OverPrintB, void, (), "B")
+    { "string" }, { { "A", EvoScript::Public }, { "B", EvoScript::Public } });
+    ESRegisterMethodArg0(::, EvoScript::Public, address, C, PrintC, void)
+    ESRegisterMethodOverrideArg0(::, EvoScript::Public, address, C, OverPrintA, void)
+    ESRegisterMethodOverrideArg0(::, EvoScript::Public, address, C, VirtualA, void)
+    ESRegisterMethodOverrideArg0(::, EvoScript::Public, address, C, OverPrintB, void)
 
     address->Save(R"(J:\C++\GameEngine\Engine\Dependences\Framework\Depends\EvoScript\UnitTests\Scripts\Library\)");
 
+#ifdef __MINGW64__
+    auto* compiler = EvoScript::Compiler::Create("MinGW Makefiles", R"(J:\C++\EvoScript\Cache)");
+#else
     auto* compiler = EvoScript::Compiler::Create("Visual Studio 16 2019", R"(J:\C++\EvoScript\Cache)");
+#endif
 
     auto* script = EvoScript::Script::Allocate("Just script", compiler, address->GetAddresses(), true);
     if (!script->Load(R"(J:\C++\GameEngine\Engine\Dependences\Framework\Depends\EvoScript\UnitTests\Scripts\Example2)")) {
         return -1;
     }
 
-    auto* ptr = new C();
-
-    /*ptr->OverPrintA();
-    ptr->OverPrintB();
-
-    auto p = &C::OverPrintB;
-    void* pp = *reinterpret_cast<void**>(&p);
-    typedef void (A::*ClassPtr)();
-    auto origPtr = *reinterpret_cast<ClassPtr*>(&pp);
-    (*(ptr).*origPtr)();*/
+    auto ptr = new C();
 
     typedef void(*ProcessFnPtr)(C*);
     auto fun = script->GetState()->GetFunction<ProcessFnPtr>("Process");

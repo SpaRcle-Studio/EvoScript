@@ -18,10 +18,8 @@ EvoScript::Compiler *EvoScript::Compiler::Create(const std::string& generator, c
         compiler->m_generator = Tools::FixPath(generator);
         compiler->m_cachePath = Tools::FixPath(cachePath);
 
-        for (const auto& file : fs::directory_iterator(compiler->m_cachePath + "/Modules/")) {
-            if (file.path().extension() == IState::Extension)
-                Tools::RemoveFile(file.path().string());
-        }
+        for (const auto& file : Tools::GetAllFilesInDirWithExt(compiler->m_cachePath + "/Modules/", IState::Extension))
+            Tools::RemoveFile(file);
 
         return compiler;
     }
@@ -74,10 +72,8 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
                 Tools::RemoveFile(module);
         }
 
-        for (const auto& file : fs::directory_iterator(build + (script->IsDebug() ? "Debug" : "Release"))) {
-            if (file.path().extension() == IState::Extension)
-                Tools::RemoveFile(file.path().string());
-        }
+        for (const auto& file : Tools::GetAllFilesInDirWithExt(build + (script->IsDebug() ? "Debug" : "Release"), IState::Extension))
+            Tools::RemoveFile(file);
 
         Tools::CreatePath(build);
 
@@ -87,21 +83,21 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
             system(std::string("cd " + build + " && "
                                "cmake -G \"" + m_generator + "\" " + source + " && "
                                "cmake --build . --config Debug").c_str());
-
-            if (auto files = Tools::GetAllFilesInDirWithExt(build + "Debug", IState::Extension); files.size() == 1)
-                Tools::Copy(files[0], module);
-            else
-                ES_ERROR("Compiler::Compile() : file not found!");
         }
         else {
             system(std::string("cd " + build + " && "
                                "cmake -G \"" + m_generator + "\" " + source + " && "
                                "cmake --build . --config Release").c_str());
-            if (auto files = Tools::GetAllFilesInDirWithExt(build + "Release", IState::Extension); files.size() == 1)
-                Tools::Copy(files[0], module);
-            else
-                ES_ERROR("Compiler::Compile() : file not found!");
         }
+
+        std::string postfix;
+        if (m_generator.find("Visual Studio") != std::string::npos)
+            postfix = script->IsDebug() ? "/Debug" : "/Release";
+
+        if (auto files = Tools::GetAllFilesInDirWithExt(build + postfix, IState::Extension); files.size() == 1)
+            Tools::Copy(files[0], module);
+        else
+            ES_ERROR("Compiler::Compile() : file not found!");
 
         if (success = Tools::FileExists(module); success)
             ES_LOG("Compiler::Compile() : successfully compiled the \"" + script->GetName() + "\" script!")

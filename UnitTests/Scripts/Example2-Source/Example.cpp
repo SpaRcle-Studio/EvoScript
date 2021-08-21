@@ -12,6 +12,5 @@ EXTERN void Process(C* c) {
     c->PrintC();
     c->OverPrintA();
     c->OverPrintB();
-
     static_cast<A*>(c)->VirtualA();
 }

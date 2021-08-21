@@ -10,11 +10,9 @@ bool EvoScript::AddressTableGen::RegisterNewClass(
         const std::string &name,
         const std::string &header,
         const std::vector<Property> &properties,
-        std::set<std::string> includes,
+        const std::set<std::string>& includes,
         const std::vector<InheritClass>& inherit)
 {
-    includes.insert(m_standardLib);
-
     if (auto f = m_classes.find(name); f != m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterClass() : class \"" + name + "\" is already exists!");
         return false;
@@ -40,7 +38,7 @@ bool EvoScript::AddressTableGen::RegisterNewClass(
 }
 
 bool EvoScript::AddressTableGen::RegisterMethod(
-    void *functionPrt,
+    const std::function<void(EvoScript::IState*)>& setter,
     const std::string &className,
     const std::string &methodName,
     const std::string &returnType,
@@ -54,18 +52,21 @@ bool EvoScript::AddressTableGen::RegisterMethod(
         return false;
     }
     else {
-        this->m_methodPointers.emplace_back(functionPrt);
+        this->m_methodPointers.emplace_back(setter);
 
         Method method = {
-            .m_id       = (uint32_t)(m_methodPointers.size() - 1),
-            .m_name     = methodName,
-            .m_class    = className,
-            .m_return   = returnType,
-            .m_args     = argTypes,
-            .m_type     = type,
-            .m_override = _overrideClass,
-            .m_public   = publicity,
+            .m_id         = (uint32_t)(m_methodPointers.size() - 1),
+            .m_name       = methodName,
+            .m_class      = className,
+            .m_return     = returnType,
+            .m_args       = argTypes,
+            .m_type       = type,
+            .m_override   = _overrideClass,
+            .m_public     = publicity,
+            .m_stringArgs = "",
+            .m_argNames   = ""
         };
+        method.MathArguments();
 
         auto& [key, header] = *_class;
         m_headers[header].FindClass(className)->m_methods.emplace_back(method);
@@ -76,10 +77,6 @@ bool EvoScript::AddressTableGen::RegisterMethod(
 
 bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
     Tools::CreatePath(Tools::FixPath(libFolder));
-
-    if (!GenerateStandardLibrary(libFolder)) {
-        return false;
-    }
 
     for (const auto& [key, header] : m_headers) {
         std::string path = libFolder + key + ".h";
@@ -93,37 +90,6 @@ bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
 
         file.close();
     }
-
-    return true;
-}
-
-bool EvoScript::AddressTableGen::GenerateStandardLibrary(const std::string& libFolder) {
-    Tools::CreatePath(Tools::FixPath(libFolder + "Standard/"));
-
-    std::string path = libFolder + m_standardLib;
-    std::ofstream file(path);
-    if (file.is_open()) {
-        file << ("//\n// Created by Evo Script code generator on "
-                  + Tools::GetData() + " | Author - Monika\n//\n\n");
-
-        file << "#ifndef EVOSCRIPTLIB_ADDRESSES_H\n";
-        file << "#define EVOSCRIPTLIB_ADDRESSES_H\n\n";
-
-        file << "#define EXTERN extern \"C\" __declspec(dllexport)\n\n";
-
-        file << "void** g_methodPointers; \n\n";
-
-        file << "EXTERN void Init(void** methodPointers) {\n";
-        file << "\tg_methodPointers = methodPointers;\n";
-        file << "}\n\n";
-
-        file << "#endif\n";
-    } else {
-        ES_ERROR("AddressTableGen::GenerateStandardLibrary() : failed to open file! \n\tPath: " + path);
-        return false;
-    }
-
-    file.close();
 
     return true;
 }

@@ -44,9 +44,13 @@ bool EvoScript::Script::HookFunctions() {
         return false;
     }
 
-    auto init = m_state->GetFunction<Typedefs::InitFnPtr>("Init");
-    if (init)
-        init(m_methodPointers);
+    for (auto & m_methodPointer : m_methodPointers)
+        if (m_methodPointer)
+            m_methodPointer(this->m_state);
+        else {
+            ES_ERROR("Script::HookFunction() : invalid setter!");
+            return false;
+        }
 
     m_awake  = m_state->GetFunction<Typedefs::AwakeFnPtr>("Awake");
     m_start  = m_state->GetFunction<Typedefs::StartFnPtr>("Start");

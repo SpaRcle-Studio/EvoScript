@@ -81,14 +81,14 @@ int main() {
     address->RegisterNewClass("Pointer", "Header", {
             { "void*", "self", EvoScript::Private }
     });
-    ESRegisterMethod(::, address, Pointer, GetString, std::string, ())
-    ESRegisterMethod(::, address, Pointer, Print, void, (const char*))
+    ESRegisterMethod(::, EvoScript::Public, address, Pointer, GetString, std::string, ())
+    ESRegisterMethod(::, EvoScript::Public, address, Pointer, Print, void, (const char*))
 
     address->RegisterNewClass("Parent", "Header", {
             {"int",         "abc",   EvoScript::Public},
             {"std::string", "str32", EvoScript::Public},
     });
-    ESRegisterVirtualMethod(NS::, address, Parent, PrintHello, void, ())
+    ESRegisterVirtualMethod(NS::, EvoScript::Public, address, Parent, PrintHello, void, ())
 
     address->RegisterNewClass("SimpleClass", "Header", {
         { "int",         "number", EvoScript::Private },
@@ -101,20 +101,20 @@ int main() {
     {
         EvoScript::InheritClass { "Parent", EvoScript::Public },
     });
-    ESRegisterMethod(::, address, SimpleClass, Summ, int, (int, int))
-    ESRegisterOverrideMethod(::, address, SimpleClass, PrintHello, void, (), "Parent")
-    ESRegisterMethod(::, address, SimpleClass, GetString, std::string, ())
-    ESRegisterMethod(::, address, SimpleClass, Add, void, (int))
-    ESRegisterMethod(::, address, SimpleClass, GetVector, std::vector<int>, ())
-    ESRegisterMethod(::, address, SimpleClass, GetNumber, int, ())
-    ESRegisterMethod(::, address, SimpleClass, Print, void, (const char*))
-    ESRegisterStaticMethod(::, address, SimpleClass, StaticMethod, void, ())
+    ESRegisterMethod(::, EvoScript::Public, address, SimpleClass, Summ, int, (int, int))
+    ESRegisterOverrideMethod(::, EvoScript::Public, address, SimpleClass, PrintHello, void, (), "Parent")
+    ESRegisterMethod(::, EvoScript::Public, address, SimpleClass, GetString, std::string, ())
+    ESRegisterMethod(::, EvoScript::Public, address, SimpleClass, Add, void, (int))
+    ESRegisterMethod(::, EvoScript::Public, address, SimpleClass, GetVector, std::vector<int>, ())
+    ESRegisterMethod(::, EvoScript::Public, address, SimpleClass, GetNumber, int, ())
+    ESRegisterMethod(::, EvoScript::Public, address, SimpleClass, Print, void, (const char*))
+    ESRegisterStaticMethod(::, EvoScript::Public, address, SimpleClass, StaticMethod, void, ())
 
     address->Save(R"(J:\C++\EvoScript\UnitTests\Scripts\Library\)");
 
     auto* compiler = EvoScript::Compiler::Create("Visual Studio 16 2019", R"(J:\C++\EvoScript\Cache)");
 
-    auto* script = EvoScript::Script::Allocate("Just script", compiler, true);
+    auto* script = EvoScript::Script::Allocate("Just script", compiler, address->GetAddresses(), true);
     if (!script->Load(R"(J:\C++\EvoScript\UnitTests\Scripts\Example)")) {
         return -1;
     }

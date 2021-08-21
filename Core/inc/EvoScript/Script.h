@@ -23,22 +23,26 @@ namespace EvoScript {
     public:
         Script(const Script&) = delete;
     private:
-        Script(std::string name, Compiler* compiler, void** methodPointers, bool needReCompile) :
+        Script(
+                std::string name,
+                Compiler* compiler,
+                std::vector<std::function<void(EvoScript::IState*)>> methodPointers,
+                bool needReCompile) :
             m_name(std::move(name)),
             m_compiler(compiler),
-            m_methodPointers(methodPointers),
+            m_methodPointers(std::move(methodPointers)),
             m_needReCompile(needReCompile) { }
         ~Script() = default;
     private:
         //! name it isn't path! It is just name.
-        std::string m_name           = "None";
+        std::string                                          m_name           = "None";
         //! path to original module file
-        std::string m_path           = "None";
-        bool        m_needReCompile  = false;
-        Compiler*   m_compiler       = nullptr;
-        void**      m_methodPointers = nullptr;
+        std::string                                          m_path           = "None";
+        bool                                                 m_needReCompile  = false;
+        Compiler*                                            m_compiler       = nullptr;
+        std::vector<std::function<void(EvoScript::IState*)>> m_methodPointers = { };
 
-        IState*     m_state          = nullptr;
+        IState*                                              m_state          = nullptr;
 
 #ifdef NDEBUG
         const bool  m_debug         = false;
@@ -67,7 +71,11 @@ namespace EvoScript {
         bool FixedUpdate() { ES_CALL_DLL(m_fixed) }
         bool OnGUI() { ES_CALL_DLL(m_onGUI) }
     public:
-        static Script* Allocate(const std::string& name, Compiler* compiler, void** methodPointers, bool needReCompile) {
+        static Script* Allocate(
+                const std::string& name,
+                Compiler* compiler,
+                const std::vector<std::function<void(EvoScript::IState*)>>& methodPointers,
+                bool needReCompile) {
             return new Script(name, compiler, methodPointers, needReCompile);
         }
     public:

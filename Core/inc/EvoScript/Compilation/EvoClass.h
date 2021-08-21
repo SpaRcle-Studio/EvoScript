@@ -24,6 +24,14 @@ namespace EvoScript {
         std::vector<Method>       m_methods;
         std::vector<InheritClass> m_inherit;
 
+        [[nodiscard]] std::string GetAsIncomplete() const {
+            return "class " + m_name + ";";
+        }
+
+        [[nodiscard]] std::string GetInherit() const {
+            return m_inherit.empty() ? "" : m_inherit[0].m_name;
+        }
+
         [[nodiscard]] std::string ToString() const {
             std::string result;
 
@@ -62,7 +70,7 @@ namespace EvoScript {
                     result += PublicityToString(currentPub) + "\n";
                 }
 
-                result += Tools::TabString(method.ToString(m_inherit.empty() ? "" : m_inherit[0].m_name)) + "\n";
+                result += Tools::TabString(method.ToString()) + "\n";
             }
 
             result += "};";

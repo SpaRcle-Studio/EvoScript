@@ -9,25 +9,50 @@
 
 #include <EvoScript/Tools/StringUtils.h>
 
-#include <experimental/filesystem> // or #include <filesystem> for C++17 and up
+#include <sys/stat.h>
 #include <fstream>
+
 #include <vector>
 
-namespace fs = std::experimental::filesystem;
+#ifdef WIN32
+    #include <Windows.h>
+#endif
+
+#include <direct.h>
 
 namespace EvoScript::Tools {
     static std::vector<std::string> GetAllFilesInDir(const std::string& path) {
         auto files = std::vector<std::string>();
-        for (const auto & entry : fs::directory_iterator(path))
-            files.emplace_back(entry.path().string());
+
+#ifdef WIN32
+        std::string search_path = path + "/*.*";
+        WIN32_FIND_DATA fd;
+        HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
+        if(hFind != INVALID_HANDLE_VALUE) {
+            do {
+                // read all (real) files in current folder
+                // , delete '!' read other 2 default folder . and ..
+                if(! (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ) {
+                    files.emplace_back(path + "/" + std::string(fd.cFileName));
+                }
+            }while(::FindNextFile(hFind, &fd));
+            ::FindClose(hFind);
+        }
+#endif
+
         return files;
     }
 
     static std::vector<std::string> GetAllFilesInDirWithExt(const std::string& path, const std::string& ext) {
         auto files = std::vector<std::string>();
-        for (const auto & entry : fs::directory_iterator(path))
-            if (entry.path().extension() == ext)
-                files.emplace_back(entry.path().string());
+
+        auto all = GetAllFilesInDir(path);
+
+        for (const std::string& file : all)
+            if (auto id = file.rfind('.'); id != std::string::npos)
+                if (file.substr(id, file.size() - id) == ext)
+                    files.emplace_back(file);
+
         return files;
     }
 
@@ -41,7 +66,11 @@ namespace EvoScript::Tools {
     }
 
     static bool CreateFolder(const std::string& directory) {
-        return fs::create_directory(directory);
+#ifdef __MINGW64__
+        return mkdir(directory.c_str()) == 0;
+#else
+        return _mkdir(directory.c_str()) == 0;
+#endif
     }
 
     static bool Copy(const std::string& src, const std::string& dst) {
