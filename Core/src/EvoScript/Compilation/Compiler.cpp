@@ -97,7 +97,7 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
         if (auto files = Tools::GetAllFilesInDirWithExt(build + postfix, IState::Extension); files.size() == 1)
             Tools::Copy(files[0], module);
         else
-            ES_ERROR("Compiler::Compile() : file not found!");
+            ES_ERROR("Compiler::Compile() : file not found! \n\tPath: " + module);
 
         if (success = Tools::FileExists(module); success)
             ES_LOG("Compiler::Compile() : successfully compiled the \"" + script->GetName() + "\" script!")
