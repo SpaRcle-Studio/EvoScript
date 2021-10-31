@@ -92,10 +92,7 @@ namespace EvoScript {
 
             for (const auto& _class : m_classes)
                 for (const auto& _method : _class.m_methods) {
-                    auto _typedef = _method.m_class + _method.m_name + "FnPtr";
-                    result += "typedef " + _method.GetTypedef(_class.GetInherit()) + "\n";
-                    result += (_typedef + " g_").append(_typedef) + ";\n";
-                    result += _method.GetSetter() + "\n";
+                    result += _method.GetSetterWithVar().append("\n");
                 }
 
             for (const auto& _class : m_classes)
@@ -132,6 +129,8 @@ namespace EvoScript {
             return m_methodPointers;
         }
 
+        void AddMethodPointer(const std::function<void(EvoScript::IState*)>& setter);
+
         bool RegisterMethod(
                 const std::function<void(EvoScript::IState*)>& setter,
                 const std::string& className,
@@ -145,7 +144,6 @@ namespace EvoScript {
         bool RegisterNewClass(
                 const std::string& name,
                 const std::string& header,
-                const std::vector<Property>& properties,
                 const std::set<std::string>& includes = {},
                 const std::vector<InheritClass>& inherit = {});
 
@@ -168,45 +166,6 @@ namespace EvoScript {
 #define ESArg5(a1, a2, a3, a4, a5) a1, a2, a3, a4, a5
 #define ESArg6(a1, a2, a3, a4, a5, a6) a1, a2, a3, a4, a5, a6
 #define ESArg7(a1, a2, a3, a4, a5, a6, a7) a1, a2, a3, a4, a5, a6, a7
-
-#define ESRegisterMethodOverride(_ns, _pub, _addrTable, _class, _method, _returnType, _args, _names) {          \
-    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                                       \
-    auto fun = [] (EvoScript::IState* state) {                                                                  \
-        typedef void(*SetterFnPtr)(const std::function<_returnType (_class*, _args)>&);                         \
-        auto fun = state->GetFunction<SetterFnPtr>(                                                             \
-            std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                               \
-        if (fun) fun([](_class* ptr, _args) -> _returnType { return ptr->_method(_names); });                   \
-    };                                                                                                          \
-    _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, strArgs, EvoScript::Override, "", _pub); } \
-
-#define ESRegisterMethodOverrideArg0(_ns, _pub, _addrTable, _class, _method, _returnType) {                \
-    auto fun = [] (EvoScript::IState* state) {                                                             \
-        typedef void(*SetterFnPtr)(const std::function<_returnType (_class*)>&);                           \
-        auto fun = state->GetFunction<SetterFnPtr>(                                                        \
-            std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                          \
-        if (fun) fun([](_class* ptr) -> _returnType { return ptr->_method(); });                           \
-    };                                                                                                     \
-    _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, {}, EvoScript::Override, "", _pub); } \
-
-
-#define ESRegisterMethodVirtual(_ns, _pub, _addrTable, _class, _method, _returnType, _args, _names) {          \
-    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                                      \
-    auto fun = [] (EvoScript::IState* state) {                                                                 \
-        typedef void(*SetterFnPtr)(const std::function<_returnType (_class*, _args)>&);                        \
-        auto fun = state->GetFunction<SetterFnPtr>(                                                            \
-            std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                              \
-        if (fun) fun([](_class* ptr, _args) -> _returnType { return ptr->_method(_names); });                  \
-    };                                                                                                         \
-    _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, strArgs, EvoScript::Virtual, "", _pub); } \
-
-#define ESRegisterMethodVirtualArg0(_ns, _pub, _addrTable, _class, _method, _returnType) {                \
-    auto fun = [] (EvoScript::IState* state) {                                                            \
-        typedef void(*SetterFnPtr)(const std::function<_returnType (_class*)>&);                          \
-        auto fun = state->GetFunction<SetterFnPtr>(                                                       \
-            std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                         \
-        if (fun) fun([](_class* ptr) -> _returnType { return ptr->_method(); });                          \
-    };                                                                                                    \
-    _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, {}, EvoScript::Virtual, "", _pub); } \
 
 #define ESRegisterMethodArg0(_ns, _pub, _addrTable, _class, _method, _returnType) {                      \
     auto fun = [] (EvoScript::IState* state) {                                                           \

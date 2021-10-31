@@ -38,18 +38,13 @@ std::string EvoScript::Method::ToString() const  {
 
     std::string name = m_class + m_name + "FnPtr";
 
-    /*if (m_type == Override || m_type == Normal || m_type == Virtual || m_type == VirtualOverride)
-        result += "\treturn (*this.*g_" + m_class + m_name + "FnPtr)(" + m_argNames + ");\n";
-    else if (m_type == Static)
-        result += "\treturn (*g_" + m_class + m_name + "FnPtr)(" + m_argNames + ");\n";*/
-
     if (m_type == Static) {
-        if (m_args.empty())
+        if (m_argNames.empty())
             result += "\treturn g_" + m_class + m_name + "FnPtr();\n";
         else
             result += "\treturn g_" + m_class + m_name + "FnPtr(" + m_argNames + ");\n";
     } else {
-        if (m_args.empty())
+        if (m_argNames.empty())
             result += "\treturn g_" + m_class + m_name + "FnPtr(this);\n";
         else
             result += "\treturn g_" + m_class + m_name + "FnPtr(this, " + m_argNames + ");\n";
@@ -60,27 +55,16 @@ std::string EvoScript::Method::ToString() const  {
     return result;
 }
 
-std::string EvoScript::Method::GetTypedef(const std::string& inheritClass) const {
+std::string EvoScript::Method::GetTypedef() const {
     std::string name = m_class + m_name + "FnPtr";
 
-    /*if (m_type == Override || m_type == Normal || m_type == Virtual || m_type == VirtualOverride) {
-        if (m_override.empty()) {
-            if (inheritClass.empty())
-                return m_return + " (" + m_class + "::*" + name + ")(" + m_stringArgs + ");";
-            else
-                return m_return + " (" + inheritClass + "::*" + name + ")(" + m_stringArgs + ");";
-        } else
-            return m_return + " (" + m_override + "::*" + name + ")(" + m_stringArgs + ");";
-    } else if (m_type == Static)
-        return m_return + " (*" + name + ")(" + m_stringArgs + ");";*/
-
     if (m_type == Static) {
-        if (m_args.empty())
+        if (m_stringArgs.empty())
             return "std::function<" + m_return + "()> " + name + ";";
         else
             return "std::function<" + m_return + "(" + m_stringArgs + ")> " + name + ";";
     } else {
-        if (m_args.empty())
+        if (m_stringArgs.empty())
             return "std::function<" + m_return + "(" + m_class + "*)> " + name + ";";
         else
             return "std::function<" + m_return + "(" + m_class + "*, " + m_stringArgs + ")> " + name + ";";
@@ -91,18 +75,25 @@ std::string EvoScript::Method::GetSetter() const {
     std::string _typedef = m_class + m_name + "FnPtr";
 
     if (m_type == Static) {
-        if (m_args.empty())
-            return "extern \"C\" __declspec(dllexport) void " + _typedef + "Setter(const std::function<" + m_return +
+        if (m_stringArgs.empty())
+            return "EXTERN void " + _typedef + "Setter(const std::function<" + m_return +
                    +"()>& fnPtr) { \n\tg_" + _typedef + " = fnPtr; \n}\n";
         else
-            return "extern \"C\" __declspec(dllexport) void " + _typedef + "Setter(const std::function<" + m_return +
+            return "EXTERN void " + _typedef + "Setter(const std::function<" + m_return +
                    +"(" + m_stringArgs + ")>& fnPtr) { \n\tg_" + _typedef + " = fnPtr; \n}\n";
     } else {
-        if (m_args.empty())
-            return "extern \"C\" __declspec(dllexport) void " + _typedef + "Setter(const std::function<" + m_return +
+        if (m_stringArgs.empty())
+            return "EXTERN void " + _typedef + "Setter(const std::function<" + m_return +
                    +"(" + m_class + "*)>& fnPtr) { \n\tg_" + _typedef + " = fnPtr; \n}\n";
         else
-            return "extern \"C\" __declspec(dllexport) void " + _typedef + "Setter(const std::function<" + m_return +
+            return "EXTERN void " + _typedef + "Setter(const std::function<" + m_return +
                    +"(" + m_class + "*, " + m_stringArgs + ")>& fnPtr) { \n\tg_" + _typedef + " = fnPtr; \n}\n";
     }
+}
+
+std::string EvoScript::Method::GetSetterWithVar() const {
+    auto _typedef = m_class + m_name + "FnPtr";
+    std::string result = "typedef " + GetTypedef() + "\n";
+    result += (_typedef + " g_").append(_typedef) + ";\n";
+    return result + GetSetter();
 }

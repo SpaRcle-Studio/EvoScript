@@ -42,7 +42,6 @@ namespace EvoScript {
     };
 
     struct Method {
-        uint32_t                 m_id;
         std::string              m_name;
         std::string              m_class;
         std::string              m_return;
@@ -55,8 +54,9 @@ namespace EvoScript {
         std::string              m_argNames;
 
         void MathArguments();
-        [[nodiscard]] std::string GetTypedef(const std::string& inheritClass) const;
+        [[nodiscard]] std::string GetTypedef() const;
         [[nodiscard]] std::string GetSetter() const;
+        [[nodiscard]] std::string GetSetterWithVar() const;
         [[nodiscard]] std::string ToString() const;
     };
 }

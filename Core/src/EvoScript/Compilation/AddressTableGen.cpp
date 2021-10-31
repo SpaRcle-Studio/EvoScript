@@ -9,7 +9,6 @@
 bool EvoScript::AddressTableGen::RegisterNewClass(
         const std::string &name,
         const std::string &header,
-        const std::vector<Property> &properties,
         const std::set<std::string>& includes,
         const std::vector<InheritClass>& inherit)
 {
@@ -21,7 +20,7 @@ bool EvoScript::AddressTableGen::RegisterNewClass(
     Class _class = {
         .m_header     = header,
         .m_name       = name,
-        .m_properties = properties,
+        .m_properties = { },
         .m_methods    = { },
         .m_inherit    = inherit,
     };
@@ -52,10 +51,9 @@ bool EvoScript::AddressTableGen::RegisterMethod(
         return false;
     }
     else {
-        this->m_methodPointers.emplace_back(setter);
+        this->AddMethodPointer(setter);
 
         Method method = {
-            .m_id         = (uint32_t)(m_methodPointers.size() - 1),
             .m_name       = methodName,
             .m_class      = className,
             .m_return     = returnType,
@@ -136,4 +134,8 @@ bool EvoScript::AddressTableGen::RegisterTypedef(
         m_headers[header] = { header, { /* includes */ }, { /*incomplete*/ }, { _typedef }, { /*enums*/ }, { /*classes*/ } };
 
     return true;
+}
+
+void EvoScript::AddressTableGen::AddMethodPointer(const std::function<void(EvoScript::IState *)> &setter) {
+    this->m_methodPointers.emplace_back(setter);
 }
