@@ -21,6 +21,45 @@
 #include <direct.h>
 
 namespace EvoScript::Tools {
+    static bool RemoveFolder(const std::string& path) {
+#ifdef WIN32
+        return RemoveDirectoryA(path.c_str());
+#else
+        return false;
+#endif
+    }
+
+    static std::vector<std::string> GetAllDirsInDir(const std::string& path) {
+        auto dirs = std::vector<std::string>();
+
+#ifdef WIN32
+        std::string search_path = path + "/*.*";
+        WIN32_FIND_DATA fd;
+        HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
+        if(hFind != INVALID_HANDLE_VALUE) {
+            do {
+                // read all (real) files in current folder
+                // , delete '!' read other 2 default folder . and ..
+                if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                    const std::string name = std::string(fd.cFileName);
+
+                    if (name.empty() || name == ".." || name == ".")
+                        continue;
+
+                    dirs.emplace_back(path + "/" + name);
+                }
+            }while(::FindNextFile(hFind, &fd));
+            ::FindClose(hFind);
+        }
+#endif
+
+        return dirs;
+    }
+
+    static bool IsDirectoryEmpty(const std::string& path) {
+        return GetAllDirsInDir(path).empty();
+    }
+
     static std::vector<std::string> GetAllFilesInDir(const std::string& path) {
         auto files = std::vector<std::string>();
 
@@ -90,7 +129,13 @@ namespace EvoScript::Tools {
     }
 
     //! path must be a fix
-    static void CreatePath(const std::string& path, uint32_t offset = 0) {
+    static void CreatePath(std::string path, uint32_t offset = 0) {
+        if (path.empty())
+            return;
+
+        if (path.back() != '/')
+            path.append("/");
+
         auto pos = path.find('/', offset);
         if (pos != std::string::npos) {
             auto dir = Tools::Read(path, pos);

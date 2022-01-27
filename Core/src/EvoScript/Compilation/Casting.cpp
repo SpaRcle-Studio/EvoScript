@@ -13,6 +13,7 @@ bool EvoScript::CastingGen::RegisterCast(
         const std::string &to,
         EvoScript::CastingType type)
 {
+    m_addressTable->HashCombine("Cast_from_" + from + "_to_" + to);
     m_addressTable->AddMethodPointer(setter);
 
     m_incomplete.insert(from);

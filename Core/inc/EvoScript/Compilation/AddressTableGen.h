@@ -110,12 +110,11 @@ namespace EvoScript {
         ~AddressTableGen() = default;
 
         AddressTableGen(const AddressTableGen&) = delete;
-    private:
-        //! key - class name, value - header name
-        std::map<std::string, std::string>                   m_classes;
-        std::map<std::string, Header>                        m_headers;
-        std::vector<std::function<void(EvoScript::IState*)>> m_methodPointers;
+
     public:
+        [[nodiscard]] size_t GetApiHash() const { return m_hash; }
+        [[nodiscard]] std::string GetApiVersion() const { return std::to_string(GetApiHash()); }
+        [[nodiscard]] std::vector<std::function<void(EvoScript::IState*)>> GetAddresses() const { return m_methodPointers; }
         [[nodiscard]] Header GetHeader(const std::string& name) const {
             if (auto f = m_headers.find(name); f == m_headers.end()) {
                 ES_ERROR("AddressTableGen::GetHeader() : header isn't exists!");
@@ -124,13 +123,8 @@ namespace EvoScript {
                 return m_headers.at(name);
         }
         bool Save(const std::string& libFolder);
+
     public:
-        [[nodiscard]] std::vector<std::function<void(EvoScript::IState*)>> GetAddresses() const {
-            return m_methodPointers;
-        }
-
-        void AddMethodPointer(const std::function<void(EvoScript::IState*)>& setter);
-
         bool RegisterMethod(
                 const std::function<void(EvoScript::IState*)>& setter,
                 const std::string& className,
@@ -154,8 +148,17 @@ namespace EvoScript {
                 const std::vector<std::pair<std::string, int32_t>>& values);
 
         bool RegisterTypedef(const std::string& name, const std::string& header, const std::string& value);
-
         bool AddIncompleteType(const std::string& className, const std::string& header);
+        void AddMethodPointer(const std::function<void(EvoScript::IState*)>& setter);
+        void HashCombine(const std::string& hashString);
+
+    private:
+        //! key - class name, value - header name
+        std::map<std::string, std::string>                   m_classes;
+        std::map<std::string, Header>                        m_headers;
+        std::vector<std::function<void(EvoScript::IState*)>> m_methodPointers;
+        size_t                                               m_hash = 0;
+
     };
 }
 

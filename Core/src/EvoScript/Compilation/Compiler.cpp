@@ -18,20 +18,67 @@ EvoScript::Compiler *EvoScript::Compiler::Create(const std::string& generator, c
         compiler->m_generator = Tools::FixPath(generator);
         compiler->m_cachePath = Tools::FixPath(cachePath);
 
-        for (const auto& file : Tools::GetAllFilesInDirWithExt(compiler->m_cachePath + "/Modules/", IState::Extension))
-            Tools::RemoveFile(file);
+        compiler->ClearModulesCache(compiler->m_cachePath + "/Modules");
 
         return compiler;
     }
+}
+
+
+bool EvoScript::Compiler::ClearModulesCache(const std::string& path) {
+    const auto dirs = Tools::GetAllDirsInDir(path);
+
+    /// предполагается, что dll файлы лежат в конкретной директории, и там кроме них нет ничего больше
+    if (!dirs.empty()) {
+        for (const auto &dir : dirs) {
+            if (!ClearModulesCache(dir))
+                return false;
+
+            if (Tools::IsDirectoryEmpty(dir))
+                Tools::RemoveFolder(dir);
+        }
+
+        return true;
+    }
+
+    for (const auto& file : Tools::GetAllFilesInDirWithExt(path, IState::Extension)) {
+        /// проверка, на случай, если попали в иную директорию, чтобы не удалить пол системы
+        if (file.find("Module-") == std::string::npos) {
+            ES_WARN("Compiler::ClearModulesCache() : a suspicious file has been detected! I can't perform automatic cache cleanup! \n\tFile: " + file);
+            return false;
+        }
+        Tools::RemoveFile(file);
+    }
+
+    return true;
 }
 
 void EvoScript::Compiler::Free() {
     delete this;
 }
 
-bool EvoScript::Compiler::CheckHash(const std::string& source, const std::string& scriptName, bool debug) {
-    std::string path = Tools::FixPath(m_cachePath + "/Hashes/");
-    std::string fullPath = path + scriptName + ".hash";
+bool EvoScript::Compiler::CheckApiHash(const std::string &pathToScript, bool debug) {
+    const std::string fullPath = pathToScript + "/api.hash";
+
+        auto currHash = std::pair(debug, std::vector<std::string>{ m_apiVersion });
+
+    if (Tools::FileExists(fullPath)) {
+        auto loadHash = Tools::LoadHashInfo(fullPath);
+        if (Tools::HashEquals(loadHash, currHash))
+            return true;
+        else {
+            Tools::SaveHashInfo(fullPath, currHash);
+        }
+    }
+    else {
+        Tools::SaveHashInfo(fullPath, currHash);
+    }
+
+    return false;
+}
+
+bool EvoScript::Compiler::CheckSourceHash(const std::string& source, const std::string& pathToScript, bool debug) {
+    const std::string fullPath = pathToScript + "/source.hash";
 
     auto currHash = std::pair(debug, Tools::GetHashAllFilesInDir(source));
 
@@ -40,12 +87,10 @@ bool EvoScript::Compiler::CheckHash(const std::string& source, const std::string
         if (Tools::HashEquals(loadHash, currHash))
             return true;
         else {
-            Tools::CreatePath(path);
             Tools::SaveHashInfo(fullPath, currHash);
         }
     }
     else {
-        Tools::CreatePath(path);
         Tools::SaveHashInfo(fullPath, currHash);
     }
 
@@ -53,29 +98,37 @@ bool EvoScript::Compiler::CheckHash(const std::string& source, const std::string
 }
 
 bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if (m_apiVersion == "None" || m_apiVersion.empty()) {
+        ES_ERROR("Compiler::Compile() : api hash is not set!");
+        return false;
+    }
+
     bool success = false;
 
-    m_mutex.lock();
     {
-        auto path   = Tools::FixPath(script->GetPath());
-        auto source = path + "-Source";
-        auto name   = EvoScript::Tools::BackReadTo(path, '/');
-        auto build  = m_cachePath + "/" + name + "-Build/";
-        auto module = path + IState::Extension;
+        const auto path = m_cachePath + "/Scripts/" + Tools::FixPath(script->GetName());
+        const auto source = Tools::FixPath(script->GetPath());
 
-        if (Tools::FileExists(module)) {
-            if (CheckHash(source, name, script->IsDebug())) {
-                m_mutex.unlock();
+        const auto name   = EvoScript::Tools::BackReadTo(script->GetName(), '/');
+        const auto build  = path + "/Build/";
+        const auto module = path + "/Module" + IState::Extension;
+
+        const bool isDebug = script->IsDebug();
+
+        Tools::CreatePath(path);
+        Tools::CreatePath(build);
+
+        if (CheckSourceHash(source, path, isDebug) && CheckApiHash(path, isDebug)) {
+            if (Tools::FileExists(module))
                 return true;
-            }
-            else
-                Tools::RemoveFile(module);
         }
+        else
+            Tools::RemoveFile(module);
 
         for (const auto& file : Tools::GetAllFilesInDirWithExt(build + (script->IsDebug() ? "Debug" : "Release"), IState::Extension))
             Tools::RemoveFile(file);
-
-        Tools::CreatePath(build);
 
         ES_LOG("Compiler::Compile() : compile \"" + script->GetName() + "\" script...");
 
@@ -104,7 +157,6 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
         else
             ES_ERROR("Compiler::Compile() : failed to compile the \"" + script->GetName() + "\" script!")
     }
-    m_mutex.unlock();
 
     return success;
 }
@@ -113,24 +165,26 @@ void EvoScript::Compiler::Destroy() {
 
 }
 
-EvoScript::IState *EvoScript::Compiler::AllocateState(const std::string &path) {
-    auto name = EvoScript::Tools::BackReadTo(Tools::FixPath(path), '/');
-
+EvoScript::IState *EvoScript::Compiler::AllocateState(const std::string &name) {
 ret:
-    if (auto find = m_moduleCopies.find(path); find == m_moduleCopies.end()) {
-        m_moduleCopies[path] = std::vector<uint32_t>();
+    if (auto find = m_moduleCopies.find(name); find == m_moduleCopies.end()) {
+        m_moduleCopies[name] = std::vector<uint32_t>();
         goto ret;
     }
     else {
-        auto id = this->FindFreeID(path);
+        auto id = this->FindFreeID(name);
         find->second.emplace_back(id);
 
-        std::string module = m_cachePath + "/Modules/" + name + "-" + std::to_string(id) + IState::Extension;
+        const std::string module = m_cachePath + "/Scripts/" + name + "/Module" + IState::Extension;
+        const std::string copy = m_cachePath + "/Modules/" + name + "/Module-" + std::to_string(id) + IState::Extension;
 
-        Tools::CreateFolder(m_cachePath + "/Modules");
-        Tools::Copy(path + IState::Extension, module);
+        Tools::CreatePath(m_cachePath + "/Modules/" + name);
+        if (!Tools::Copy(module, copy)) {
+            ES_ERROR("Compiler::AllocateState() : failed to copy file! \n\tSource:" + module + "\n\tDestination: " + copy);
+            return nullptr;
+        }
 
-        return IState::Allocate(module);
+        return IState::Allocate(copy);
     }
 }
 
@@ -150,4 +204,8 @@ uint32_t EvoScript::Compiler::FindFreeID(const std::string &pathToModule) {
 
         return id;
     }
+}
+
+void EvoScript::Compiler::SetApiVersion(const std::string &version) {
+    m_apiVersion = version;
 }

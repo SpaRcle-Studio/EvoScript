@@ -12,6 +12,8 @@ bool EvoScript::AddressTableGen::RegisterNewClass(
         const std::set<std::string>& includes,
         const std::vector<InheritClass>& inherit)
 {
+    HashCombine("Class_" + name);
+
     if (auto f = m_classes.find(name); f != m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterClass() : class \"" + name + "\" is already exists!");
         return false;
@@ -46,6 +48,8 @@ bool EvoScript::AddressTableGen::RegisterMethod(
     const std::string& _overrideClass,
     Publicity publicity)
 {
+    HashCombine("Class_" + className + "_Method_" + methodName);
+
     if (auto _class = m_classes.find(className); _class == m_classes.end()) {
         ES_ERROR("AddressTableGen::RegisterMethod() : class \"" + className + "\" isn't exists!")
         return false;
@@ -98,6 +102,8 @@ bool EvoScript::AddressTableGen::RegisterEnum(
         bool asClass,
         const std::vector<std::pair<std::string, int32_t>>& values)
 {
+    HashCombine("Enum_" + name);
+
     EvoEnum evoEnum = {
             .m_name = name,
             .m_header = header,
@@ -114,6 +120,8 @@ bool EvoScript::AddressTableGen::RegisterEnum(
 }
 
 bool EvoScript::AddressTableGen::AddIncompleteType(const std::string &className, const std::string &header) {
+    HashCombine("IncompleteClass_" + className);
+
     if (auto f = m_headers.find(header); f != m_headers.end()) // add in exists header
         m_headers[header].m_incompleteTypes.emplace_back(className);
     else // create new header
@@ -127,6 +135,8 @@ bool EvoScript::AddressTableGen::RegisterTypedef(
         const std::string& header,
         const std::string &value)
 {
+    HashCombine("Typedef_" + name);
+
     std::string _typedef = "typedef " + value + " " + name + ";\n";
     if (auto f = m_headers.find(header); f != m_headers.end()) // add in exists header
         m_headers[header].m_typedefs.emplace_back(_typedef);
@@ -138,4 +148,9 @@ bool EvoScript::AddressTableGen::RegisterTypedef(
 
 void EvoScript::AddressTableGen::AddMethodPointer(const std::function<void(EvoScript::IState *)> &setter) {
     this->m_methodPointers.emplace_back(setter);
+}
+
+void EvoScript::AddressTableGen::HashCombine(const std::string& hashString) {
+    std::hash<std::string> h;
+    m_hash ^= h(hashString) + 0x9e3779b9 + (m_hash << 6) + (m_hash >> 2);
 }

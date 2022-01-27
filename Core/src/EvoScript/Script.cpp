@@ -11,7 +11,7 @@ bool EvoScript::Script::Load(const std::string &path) {
         return false;
     }
 
-    if (m_state = m_compiler->AllocateState(m_path); !m_state) {
+    if (m_state = m_compiler->AllocateState(m_name); !m_state) {
         ES_ERROR("Script::Load() : failed to allocate script state!");
         return false;
     }
