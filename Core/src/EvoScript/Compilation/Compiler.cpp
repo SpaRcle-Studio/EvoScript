@@ -60,7 +60,7 @@ void EvoScript::Compiler::Free() {
 bool EvoScript::Compiler::CheckApiHash(const std::string &pathToScript, bool debug) {
     const std::string fullPath = pathToScript + "/api.hash";
 
-        auto currHash = std::pair(debug, std::vector<std::string>{ m_apiVersion });
+    auto currHash = std::pair(debug, std::vector<std::string>{ m_apiVersion });
 
     if (Tools::FileExists(fullPath)) {
         auto loadHash = Tools::LoadHashInfo(fullPath);
