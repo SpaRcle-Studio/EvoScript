@@ -65,7 +65,7 @@ namespace EvoScript {
             return new Script(name, compiler, methodPointers, needReCompile);
         }
     public:
-        bool Load(const std::string& path);
+        bool Load(const std::string& path, bool compile);
         void Destroy();
         void Free() { delete this; }
 

@@ -120,8 +120,12 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
         Tools::CreatePath(path);
         Tools::CreatePath(build);
 
-        if (CheckSourceHash(source, path, isDebug) && CheckApiHash(path, isDebug)) {
-            if (Tools::FileExists(module))
+        /// чтобы все хеш суммы сразу создались, нужно их проверить
+        uint32_t hashCompare = static_cast<uint32_t>(CheckSourceHash(source, path, isDebug))
+                             + static_cast<uint32_t>(CheckApiHash(path, isDebug));
+
+        if (hashCompare == 2) {
+            if (TryLoad(script))
                 return true;
         }
         else
@@ -208,4 +212,25 @@ uint32_t EvoScript::Compiler::FindFreeID(const std::string &pathToModule) {
 
 void EvoScript::Compiler::SetApiVersion(const std::string &version) {
     m_apiVersion = version;
+}
+
+bool EvoScript::Compiler::Load(Script* script) {
+    if (!TryLoad(script)) {
+        ES_ERROR("Compiler::Load() : failed to load the \"" + script->GetName() + "\" script!");
+        return false;
+    }
+
+    return true;
+}
+
+bool EvoScript::Compiler::TryLoad(EvoScript::Script *script) {
+    const auto path = m_cachePath + "/Scripts/" + Tools::FixPath(script->GetName());
+    const auto module = path + "/Module" + IState::Extension;
+
+    if (Tools::FileExists(module)) {
+        ES_LOG("Compiler::Load() : successfully loaded the \"" + script->GetName() + "\" script!");
+        return true;
+    }
+
+    return false;
 }

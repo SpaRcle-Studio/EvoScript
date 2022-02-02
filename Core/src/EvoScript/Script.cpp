@@ -5,8 +5,8 @@
 #include <EvoScript/Script.h>
 #include <EvoScript/Compilation/Compiler.h>
 
-bool EvoScript::Script::Load(const std::string &path) {
-    if (this->m_path = path; !this->m_compiler->Compile(this)) {
+bool EvoScript::Script::Load(const std::string &path, bool compile) {
+    if (this->m_path = path; compile ? !m_compiler->Compile(this) : !m_compiler->Load(this)) {
         ES_ERROR("Script::Load() : failed to compile script!");
         return false;
     }

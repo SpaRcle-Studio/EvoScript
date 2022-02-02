@@ -36,6 +36,9 @@ namespace EvoScript {
         void Destroy();
         void Free();
 
+        bool TryLoad(Script* script);
+        bool Load(Script* script);
+
     private:
         bool ClearModulesCache(const std::string& path);
         uint32_t FindFreeID(const std::string& pathToModule);
