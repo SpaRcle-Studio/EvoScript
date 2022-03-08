@@ -39,6 +39,8 @@ namespace EvoScript {
         bool TryLoad(Script* script);
         bool Load(Script* script);
 
+        bool LoadState(IState* state);
+
     private:
         bool ClearModulesCache(const std::string& path);
         uint32_t FindFreeID(const std::string& pathToModule);
@@ -49,8 +51,8 @@ namespace EvoScript {
         std::string  m_apiVersion    = "None";
         std::string  m_generator     = "None";
         std::string  m_cachePath     = "None";
-        std::mutex   m_mutex         = std::mutex();
 
+        std::recursive_mutex m_mutex = std::recursive_mutex();
         ModuleCopies m_moduleCopies  = ModuleCopies();
 
     };

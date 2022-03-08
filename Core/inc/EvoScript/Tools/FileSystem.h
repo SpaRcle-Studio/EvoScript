@@ -112,6 +112,20 @@ namespace EvoScript::Tools {
 #endif
     }
 
+    static void WaitFile(const std::string& path) {
+#ifdef WIN32
+    repeat:
+        HANDLE handle = CreateFile(path.c_str(), FILE_WRITE_DATA, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, 0, NULL);
+
+        if (handle == INVALID_HANDLE_VALUE) {
+            Sleep(1);
+            goto repeat;
+        }
+
+        CloseHandle(handle);
+#endif
+    }
+
     static bool Copy(const std::string& src, const std::string& dst) {
         if (!FileExists(src))
              return false;

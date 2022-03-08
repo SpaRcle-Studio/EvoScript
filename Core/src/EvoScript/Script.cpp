@@ -6,7 +6,7 @@
 #include <EvoScript/Compilation/Compiler.h>
 
 bool EvoScript::Script::Load(const std::string &path, bool compile) {
-    if (this->m_path = path; compile ? !m_compiler->Compile(this) : !m_compiler->Load(this)) {
+    if (m_path = path; compile ? !m_compiler->Compile(this) : !m_compiler->Load(this)) {
         ES_ERROR("Script::Load() : failed to compile script!");
         return false;
     }
@@ -16,12 +16,12 @@ bool EvoScript::Script::Load(const std::string &path, bool compile) {
         return false;
     }
 
-    if (!m_state->Load()) {
+    if (!m_compiler->LoadState(m_state)) {
         ES_ERROR("Script::Load() : failed to load script state!");
         return false;
     }
 
-    if (!this->HookFunctions()) {
+    if (!HookFunctions()) {
         ES_ERROR("Script::Load() : failed to hook functions!");
         return false;
     }

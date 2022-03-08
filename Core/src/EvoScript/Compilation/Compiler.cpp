@@ -98,7 +98,7 @@ bool EvoScript::Compiler::CheckSourceHash(const std::string& source, const std::
 }
 
 bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     if (m_apiVersion == "None" || m_apiVersion.empty()) {
         ES_ERROR("Compiler::Compile() : api hash is not set!");
@@ -211,6 +211,8 @@ uint32_t EvoScript::Compiler::FindFreeID(const std::string &pathToModule) {
 }
 
 void EvoScript::Compiler::SetApiVersion(const std::string &version) {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
     m_apiVersion = version;
 }
 
@@ -224,6 +226,8 @@ bool EvoScript::Compiler::Load(Script* script) {
 }
 
 bool EvoScript::Compiler::TryLoad(EvoScript::Script *script) {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
     const auto path = m_cachePath + "/Scripts/" + Tools::FixPath(script->GetName());
     const auto module = path + "/Module" + IState::Extension;
 
@@ -233,4 +237,10 @@ bool EvoScript::Compiler::TryLoad(EvoScript::Script *script) {
     }
 
     return false;
+}
+
+bool EvoScript::Compiler::LoadState(IState* state) {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+    return state->Load();
 }

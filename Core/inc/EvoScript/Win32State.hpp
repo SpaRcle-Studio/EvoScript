@@ -81,8 +81,7 @@ namespace EvoScript {
                 return false;
             }
 
-            this->m_hDLL = LoadLibrary(m_path.c_str());
-            if (!m_hDLL) {
+            if (m_hDLL = LoadLibrary(m_path.c_str()); !m_hDLL) {
                 ES_ERROR("Win32State::Load() : failed to load dll!"
                          "\n\tPath: " + m_path +
                          "\n\tError code: " + std::to_string(GetLastError()) +

@@ -9,6 +9,7 @@
 #include <EvoScript/Compilation/Typedefs.h>
 
 #include <utility>
+#include <mutex>
 
 #define ES_CALL_DLL(function) \
     if (function) { function(); return true; } else return false;
@@ -39,6 +40,7 @@ namespace EvoScript {
         Typedefs::UpdateFnPtr      m_update = nullptr;
         Typedefs::FixedUpdateFnPtr m_fixed  = nullptr;
         Typedefs::OnGUIFnPtr       m_onGUI  = nullptr;
+
     private:
         bool HookFunctions();
     public:
