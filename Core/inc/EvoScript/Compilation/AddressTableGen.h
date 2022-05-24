@@ -90,10 +90,15 @@ namespace EvoScript {
             if (!m_typedefs.empty())
                 result += "\n";
 
-            for (const auto& _class : m_classes)
-                for (const auto& _method : _class.m_methods) {
+            for (const auto& _class : m_classes) {
+                for (const auto &_method : _class.m_methods) {
+                    if (_method.m_type == Virtual) {
+                        continue;
+                    }
+
                     result += _method.GetSetterWithVar().append("\n");
                 }
+            }
 
             for (const auto& _class : m_classes)
                 result += _class.ToString() + "\n\n";
@@ -105,6 +110,7 @@ namespace EvoScript {
     };
 
     class AddressTableGen {
+        using SetterFn = std::function<void(EvoScript::IState*)>;
     public:
         AddressTableGen()  = default;
         ~AddressTableGen() = default;
@@ -126,7 +132,16 @@ namespace EvoScript {
 
     public:
         bool RegisterMethod(
-                const std::function<void(EvoScript::IState*)>& setter,
+                const SetterFn& setter,
+                const std::string& className,
+                const std::string& methodName,
+                const std::string& returnType,
+                const std::vector<std::string>& argTypes,
+                MethodType type,
+                const std::string& _overrideClass = "",
+                Publicity publicity = Publicity::Public);
+
+        bool RegisterMethod(
                 const std::string& className,
                 const std::string& methodName,
                 const std::string& returnType,
@@ -188,6 +203,13 @@ namespace EvoScript {
         if (fun) fun([](_class* ptr, _args) -> _returnType { return ptr->_method(_names); });                 \
     };                                                                                                        \
     _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, strArgs, EvoScript::Normal, "", _pub); } \
+
+#define ESRegisterVirtualMethodArg0(_pub, _addrTable, _class, _method, _returnType) {         \
+    _addrTable->RegisterMethod(#_class, #_method, #_returnType, {}, EvoScript::Virtual, "", _pub); } \
+
+#define ESRegisterVirtualMethod(_pub, _addrTable, _class, _method, _returnType, _args) {                  \
+    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                                 \
+    _addrTable->RegisterMethod(#_class, #_method, #_returnType, strArgs, EvoScript::Virtual, "", _pub); } \
 
 #define ESRegisterStaticMethodArg0(_pub, _addrTable, _class, _method, _returnType) {                \
     auto fun = [] (EvoScript::IState* state) {                                                           \

@@ -23,7 +23,7 @@ std::string EvoScript::Method::ToString() const  {
             result += m_return + " " + m_name + "(" + m_stringArgs + ") {\n";
             break;
         case Virtual:
-            result += "virtual " + m_return + " " + m_name + "(" + m_stringArgs + ") {\n";
+            result += "virtual " + m_return + " " + m_name + "(" + m_stringArgs + ")";
             break;
         case Override:
             result += m_return + " " + m_name + "(" + m_stringArgs + ") override {\n";
@@ -36,14 +36,24 @@ std::string EvoScript::Method::ToString() const  {
             break;
     }
 
-    std::string name = m_class + m_name + "FnPtr";
+    if (m_type == Virtual) {
+        if (m_return == "void") {
+            result += " { }";
+        }
+        else {
+            result += " = 0;";
+        }
+
+        return result;
+    }
 
     if (m_type == Static) {
         if (m_argNames.empty())
             result += "\treturn g_" + m_class + m_name + "FnPtr();\n";
         else
             result += "\treturn g_" + m_class + m_name + "FnPtr(" + m_argNames + ");\n";
-    } else {
+    }
+    else {
         if (m_argNames.empty())
             result += "\treturn g_" + m_class + m_name + "FnPtr(this);\n";
         else

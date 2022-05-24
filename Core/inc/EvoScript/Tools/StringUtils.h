@@ -91,7 +91,7 @@ namespace EvoScript::Tools {
     static std::string BackReadTo(const std::string& str, const char c) {
         std::string result;
 
-        for (uint32_t i = (str.size() - 1); i > 0; i--) {
+        for (int32_t i = (str.size() - 1); i >= 0; i--) {
             if (str[i] != c)
                 result += str[i];
             else

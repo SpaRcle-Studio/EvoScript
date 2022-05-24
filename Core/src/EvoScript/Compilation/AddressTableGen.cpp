@@ -55,7 +55,9 @@ bool EvoScript::AddressTableGen::RegisterMethod(
         return false;
     }
     else {
-        this->AddMethodPointer(setter);
+        if (setter) {
+            AddMethodPointer(setter);
+        }
 
         Method method = {
             .m_name       = methodName,
@@ -153,4 +155,12 @@ void EvoScript::AddressTableGen::AddMethodPointer(const std::function<void(EvoSc
 void EvoScript::AddressTableGen::HashCombine(const std::string& hashString) {
     std::hash<std::string> h;
     m_hash ^= h(hashString) + 0x9e3779b9 + (m_hash << 6) + (m_hash >> 2);
+}
+
+bool EvoScript::AddressTableGen::RegisterMethod(const std::string &className, const std::string &methodName,
+                                                const std::string &returnType, const std::vector<std::string> &argTypes,
+                                                EvoScript::MethodType type, const std::string &_overrideClass,
+                                                EvoScript::Publicity publicity)
+{
+    return RegisterMethod(SetterFn(), className, methodName, returnType, argTypes, type, _overrideClass, publicity);
 }

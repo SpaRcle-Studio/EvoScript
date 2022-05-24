@@ -5,9 +5,7 @@
 #ifndef EVOSCRIPT_DEBUG_H
 #define EVOSCRIPT_DEBUG_H
 
-#include <functional>
-#include <string>
-#include <vector>
+#include <EvoScript/macros.h>
 
 namespace EvoScript::Tools {
     class ESDebug {
@@ -15,11 +13,13 @@ namespace EvoScript::Tools {
         ESDebug()               = delete;
         ~ESDebug()              = delete;
         ESDebug(const ESDebug&) = delete;
+
     public:
         static inline std::function<void(const std::string& msg)> Log   = std::function<void(const std::string&)>();
         static inline std::function<void(const std::string& msg)> Info  = std::function<void(const std::string&)>();
         static inline std::function<void(const std::string& msg)> Warn  = std::function<void(const std::string&)>();
         static inline std::function<void(const std::string& msg)> Error = std::function<void(const std::string&)>();
+
     };
 }
 

@@ -46,13 +46,15 @@ bool EvoScript::Script::HookFunctions() {
         return false;
     }
 
-    for (auto & m_methodPointer : m_methodPointers)
-        if (m_methodPointer)
-            m_methodPointer(this->m_state);
+    for (auto&& m_methodPointer : m_methodPointers) {
+        if (m_methodPointer) {
+            m_methodPointer(m_state);
+        }
         else {
             ES_ERROR("Script::HookFunction() : invalid setter!");
             return false;
         }
+    }
 
     m_awake  = m_state->GetFunction<Typedefs::AwakeFnPtr>("Awake");
     m_start  = m_state->GetFunction<Typedefs::StartFnPtr>("Start");
@@ -62,4 +64,8 @@ bool EvoScript::Script::HookFunctions() {
     m_onGUI  = m_state->GetFunction<Typedefs::FixedUpdateFnPtr>("OnGUI");
 
     return true;
+}
+
+EvoScript::Script *EvoScript::Script::Allocate(const std::string &name, EvoScript::Compiler *compiler, MethodPointers methodPointers, bool needReCompile) {
+    return new Script(name, compiler, std::move(methodPointers), needReCompile);
 }

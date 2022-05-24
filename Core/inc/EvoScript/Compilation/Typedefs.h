@@ -6,8 +6,13 @@
 #define EVOSCRIPT_TYPEDEFS_H
 
 namespace EvoScript::Typedefs {
+    /// сборник разных типов методов на все случаи жизни
+
     typedef void(*InitFnPtr)(void**);
 
+    typedef void(*InitBehaviourFnPtr)();
+    typedef void(*ReleaseBehaviourFnPtr)();
+    typedef void(*VoidFnPtr)();
     typedef void(*AwakeFnPtr)();
     typedef void(*StartFnPtr)();
     typedef void(*CloseFnPtr)();
