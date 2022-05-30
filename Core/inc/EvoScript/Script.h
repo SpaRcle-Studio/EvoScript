@@ -15,51 +15,50 @@ namespace EvoScript {
     class Script : private Tools::NonCopyable {
         using MethodPointers = std::vector<std::function<void(EvoScript::IState*)>>;
     private:
-        Script(std::string name, Compiler* compiler, MethodPointers&& methodPointers, bool needReCompile)
+        Script(std::string name, MethodPointers&& methodPointers)
             : m_name(std::move(name))
-            , m_compiler(compiler)
             , m_methodPointers(std::move(methodPointers))
-            , m_needReCompile(needReCompile)
         { }
 
-        ~Script() override = default;
+    public:
+        ~Script() override;
 
     public:
-        static Script* Allocate(const std::string& name, Compiler* compiler, MethodPointers methodPointers, bool needReCompile);
+        static Script* Allocate(const std::string& name, MethodPointers methodPointers);
 
-        template<typename Fn> inline Fn GetFunction(const std::string& name) {
+        template<typename Fn> ES_INLINE Fn GetFunction(const std::string& name) {
             return reinterpret_cast<Fn>(m_state->GetFunction<Fn>(name.c_str()));
         }
 
-        template<typename Fn> inline bool HasFunction(const std::string& name) {
+        template<typename Fn> ES_INLINE bool HasFunction(const std::string& name) {
             return GetFunction<Fn>(name);
         }
 
-        template<typename Fn, typename Return, typename... Args> inline Return Call(Fn fn, Args... args) {
+        template<typename Fn, typename Return, typename... Args> ES_INLINE Return Call(Fn fn, Args... args) {
             return fn(std::forward<Args>(args));
         }
 
-        template<typename Fn, typename... Args> inline void Call(Fn fn, Args... args) {
+        template<typename Fn, typename... Args> ES_INLINE void Call(Fn fn, Args... args) {
             fn(std::forward<Args>(args)...);
         }
 
-        template<typename Fn, typename Return> inline Return Call(Fn fn) {
+        template<typename Fn, typename Return> ES_INLINE Return Call(Fn fn) {
             return fn();
         }
 
-        template<typename Fn, typename Return, typename... Args> inline Return Call(const std::string& name, Args... args) {
+        template<typename Fn, typename Return, typename... Args> ES_INLINE Return Call(const std::string& name, Args... args) {
             return Call<Fn, Return, Args>(GetFunction<Fn>(name), std::forward<Args>(args));
         }
 
-        template<typename Fn, typename... Args> inline void Call(const std::string& name, Args... args) {
+        template<typename Fn, typename... Args> ES_INLINE void Call(const std::string& name, Args... args) {
             Call<Fn>(GetFunction<Fn>(name), std::forward<Args>(args)...);
         }
 
-        template<typename Fn, typename Return> inline Return Call(const std::string& name) {
+        template<typename Fn, typename Return> ES_INLINE Return Call(const std::string& name) {
             return Call<Fn, Return>(GetFunction<Fn>(name));
         }
 
-        template<typename Fn> inline void Call(const std::string& name) {
+        template<typename Fn> ES_INLINE void Call(const std::string& name) {
             return Call<Fn, void>(GetFunction<Fn>(name));
         }
 
@@ -77,9 +76,8 @@ namespace EvoScript {
         ES_NODISCARD bool OnGUI() const { ES_CALL_DLL(m_onGUI) }
 
     public:
-        bool Load(const std::string& path, bool compile);
+        bool Load(const std::string& path, Compiler& compiler, bool compile);
         void Destroy();
-        void Free() { delete this; }
 
     private:
         bool HookFunctions();
@@ -95,10 +93,8 @@ namespace EvoScript {
     private:
         std::string    m_name           = "None";
         std::string    m_path           = "None";
-        Compiler*      m_compiler       = nullptr;
         MethodPointers m_methodPointers = { };
         IState*        m_state          = nullptr;
-        bool           m_needReCompile  = false;
 
 #ifdef NDEBUG
         const bool  m_debug         = false;

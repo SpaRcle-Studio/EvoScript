@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <unordered_map>
 
 #define ES_CALL_DLL(function) \
     if (function) { function(); return true; } else return false;
@@ -18,5 +19,6 @@
     if (function) { function args; return true; } else return false;
 
 #define ES_NODISCARD [[nodiscard]]
+#define ES_INLINE inline
 
 #endif //EVOSCRIPT_MACROS_H

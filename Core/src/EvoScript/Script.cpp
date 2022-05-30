@@ -5,20 +5,20 @@
 #include <EvoScript/Script.h>
 #include <EvoScript/Compilation/Compiler.h>
 
-bool EvoScript::Script::Load(const std::string &path, bool compile) {
+bool EvoScript::Script::Load(const std::string &path, Compiler& compiler, bool compile) {
     ES_LOG("Script::Load() : loading script " + path);
 
-    if (m_path = path; compile ? !m_compiler->Compile(this) : !m_compiler->Load(this)) {
+    if (m_path = path; compile ? !compiler.Compile(this) : !compiler.Load(this)) {
         ES_ERROR("Script::Load() : failed to compile script!");
         return false;
     }
 
-    if (m_state = m_compiler->AllocateState(m_name); !m_state) {
+    if (m_state = compiler.AllocateState(m_name); !m_state) {
         ES_ERROR("Script::Load() : failed to allocate script state!");
         return false;
     }
 
-    if (!m_compiler->LoadState(m_state)) {
+    if (!compiler.LoadState(m_state)) {
         ES_ERROR("Script::Load() : failed to load script state!");
         return false;
     }
@@ -66,6 +66,12 @@ bool EvoScript::Script::HookFunctions() {
     return true;
 }
 
-EvoScript::Script *EvoScript::Script::Allocate(const std::string &name, EvoScript::Compiler *compiler, MethodPointers methodPointers, bool needReCompile) {
-    return new Script(name, compiler, std::move(methodPointers), needReCompile);
+EvoScript::Script *EvoScript::Script::Allocate(const std::string &name, MethodPointers methodPointers) {
+    return new Script(name, std::move(methodPointers));
+}
+
+EvoScript::Script::~Script() {
+    if (m_state) {
+        ES_ERROR("Script() : state isn't free! Memory leak possible...");
+    }
 }

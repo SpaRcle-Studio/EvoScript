@@ -10,31 +10,21 @@
 #include <EvoScript/Tools/FileSystem.h>
 #include <EvoScript/Tools/HashUtils.h>
 
-#include <mutex>
-#include <unordered_map>
-#include <vector>
-
 namespace EvoScript {
     typedef std::unordered_map<std::string, std::vector<uint32_t>> ModuleCopies;
 
-    class Compiler {
+    class Compiler : public Tools::NonCopyable {
     public:
-        Compiler(const Compiler&) = delete;
-
-    private:
-        Compiler() = default;
-        ~Compiler() = default;
+        explicit Compiler(std::string cachePath);
+        ~Compiler() override = default;
 
     public:
         IState* AllocateState(const std::string& path);
 
-        void SetApiVersion(const std::string& version);
+        void SetApiVersion(std::string version);
+        void SetGenerator(std::string generator);
 
         bool Compile(Script* script);
-        static Compiler* Create(const std::string& generator, const std::string& cachePath);
-
-        void Destroy();
-        void Free();
 
         bool TryLoad(Script* script);
         bool Load(Script* script);

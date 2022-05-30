@@ -7,24 +7,6 @@
 #include <EvoScript/Tools/Randomizer.h>
 #include <iostream>
 
-EvoScript::Compiler *EvoScript::Compiler::Create(const std::string& generator, const std::string& cachePath) {
-    if (static Compiler* compiler = nullptr; compiler) {
-        ES_ERROR("Compiler::Create() : compiler already exists!");
-        return nullptr;
-    }
-    else {
-        compiler = new Compiler();
-
-        compiler->m_generator = Tools::FixPath(generator);
-        compiler->m_cachePath = Tools::FixPath(cachePath);
-
-        compiler->ClearModulesCache(compiler->m_cachePath + "/Modules");
-
-        return compiler;
-    }
-}
-
-
 bool EvoScript::Compiler::ClearModulesCache(const std::string& path) {
     const auto dirs = Tools::GetAllDirsInDir(path);
 
@@ -51,10 +33,6 @@ bool EvoScript::Compiler::ClearModulesCache(const std::string& path) {
     }
 
     return true;
-}
-
-void EvoScript::Compiler::Free() {
-    delete this;
 }
 
 bool EvoScript::Compiler::CheckApiHash(const std::string &pathToScript, bool debug) {
@@ -165,10 +143,6 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
     return success;
 }
 
-void EvoScript::Compiler::Destroy() {
-
-}
-
 EvoScript::IState *EvoScript::Compiler::AllocateState(const std::string &name) {
 ret:
     if (auto find = m_moduleCopies.find(name); find == m_moduleCopies.end()) {
@@ -210,10 +184,16 @@ uint32_t EvoScript::Compiler::FindFreeID(const std::string &pathToModule) {
     }
 }
 
-void EvoScript::Compiler::SetApiVersion(const std::string &version) {
+void EvoScript::Compiler::SetApiVersion(std::string version) {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    m_apiVersion = version;
+    m_apiVersion = std::move(version);
+}
+
+void EvoScript::Compiler::SetGenerator(std::string generator) {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+    m_generator = std::move(generator);
 }
 
 bool EvoScript::Compiler::Load(Script* script) {
@@ -243,4 +223,10 @@ bool EvoScript::Compiler::LoadState(IState* state) {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
     return state->Load();
+}
+
+EvoScript::Compiler::Compiler(std::string cachePath)
+    : m_cachePath(std::move(cachePath))
+{
+    ClearModulesCache(m_cachePath + "/Modules");
 }
