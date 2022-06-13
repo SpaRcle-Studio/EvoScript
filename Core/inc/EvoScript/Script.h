@@ -35,7 +35,7 @@ namespace EvoScript {
         }
 
         template<typename Fn, typename Return, typename... Args> ES_INLINE Return Call(Fn fn, Args... args) {
-            return fn(std::forward<Args>(args));
+            return fn(std::forward<Args>(args)...);
         }
 
         template<typename Fn, typename... Args> ES_INLINE void Call(Fn fn, Args... args) {
@@ -47,7 +47,7 @@ namespace EvoScript {
         }
 
         template<typename Fn, typename Return, typename... Args> ES_INLINE Return Call(const std::string& name, Args... args) {
-            return Call<Fn, Return, Args>(GetFunction<Fn>(name), std::forward<Args>(args));
+            return Call<Fn, Return, Args...>(GetFunction<Fn>(name), std::forward<Args>(args)...);
         }
 
         template<typename Fn, typename... Args> ES_INLINE void Call(const std::string& name, Args... args) {
