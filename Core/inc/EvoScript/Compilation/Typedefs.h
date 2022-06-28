@@ -5,6 +5,10 @@
 #ifndef EVOSCRIPT_TYPEDEFS_H
 #define EVOSCRIPT_TYPEDEFS_H
 
+#include <vector>
+#include <string>
+#include <any>
+
 namespace EvoScript::Typedefs {
     /// сборник разных типов методов на все случаи жизни
 
@@ -12,6 +16,10 @@ namespace EvoScript::Typedefs {
 
     typedef void(*InitBehaviourFnPtr)();
     typedef void(*ReleaseBehaviourFnPtr)();
+    typedef void(*SetPropertyFnPtr)(const std::string& id, const std::any& val);
+    typedef std::any(*GetPropertyFnPtr)(const std::string& id);
+    typedef std::vector<std::string>(*GetPropertiesFnPtr)();
+
     typedef void(*VoidFnPtr)();
     typedef void(*AwakeFnPtr)();
     typedef void(*StartFnPtr)();
