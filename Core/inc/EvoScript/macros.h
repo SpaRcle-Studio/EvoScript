@@ -12,6 +12,8 @@
 #include <mutex>
 #include <unordered_map>
 
+#define ES_FUNCTION std::function
+
 #define ES_CALL_DLL(function) \
     if (function) { function(); return true; } else return false;
 
