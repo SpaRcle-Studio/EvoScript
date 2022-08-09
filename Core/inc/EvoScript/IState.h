@@ -10,11 +10,13 @@
 
 namespace EvoScript {
     class IState : private Tools::NonCopyable {
+    public:
+        ~IState() override = default;
+
     protected:
         explicit IState(std::string path)
             : m_path(std::move(path))
         { }
-        ~IState() override = default;
 
     public:
         static IState* Allocate(const std::string& path);
@@ -26,8 +28,6 @@ namespace EvoScript {
     public:
         ES_NODISCARD std::string GetPath() const { return m_path; }
 
-        virtual bool Destroy() = 0;
-        virtual void Free()    = 0;
         virtual bool Exists()  = 0;
         virtual bool Load()    = 0;
         virtual bool Unload()  = 0;

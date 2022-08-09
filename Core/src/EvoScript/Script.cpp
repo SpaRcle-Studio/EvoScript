@@ -31,15 +31,6 @@ bool EvoScript::Script::Load(const std::string &path, Compiler& compiler, bool c
     return true;
 }
 
-void EvoScript::Script::Destroy() {
-    if (m_state) {
-        m_state->Unload();
-        m_state->Destroy();
-        m_state->Free();
-        m_state = nullptr;
-    }
-}
-
 bool EvoScript::Script::HookFunctions() {
     if (!m_state) {
         ES_ERROR("Script::HookFunction() : state is nullptr!");
@@ -56,12 +47,21 @@ bool EvoScript::Script::HookFunctions() {
         }
     }
 
-    m_awake  = m_state->GetFunction<Typedefs::AwakeFnPtr>("Awake");
-    m_start  = m_state->GetFunction<Typedefs::StartFnPtr>("Start");
-    m_close  = m_state->GetFunction<Typedefs::CloseFnPtr>("Close");
-    m_update = m_state->GetFunction<Typedefs::UpdateFnPtr>("Update");
-    m_fixed  = m_state->GetFunction<Typedefs::FixedUpdateFnPtr>("FixedUpdate");
-    m_onGUI  = m_state->GetFunction<Typedefs::FixedUpdateFnPtr>("OnGUI");
+    if (auto&& setter = m_state->GetFunction<Typedefs::SetAllocateMemoryFnPtr>("SetAllocateMemoryFnPtr")) {
+        setter(&ESAllocateMemory);
+    }
+    else {
+        ES_ERROR("Script::HookFunctions() : function \"SetAllocateMemoryFnPtr\" not found!");
+        return false;
+    }
+
+    if (auto&& setter = m_state->GetFunction<Typedefs::SetFreeMemoryFnPtr>("SetFreeMemoryFnPtr")) {
+        setter(&ESFreeMemory);
+    }
+    else {
+        ES_ERROR("Script::HookFunctions() : function \"SetFreeMemoryFnPtr\" not found!");
+        return false;
+    }
 
     return true;
 }
@@ -72,6 +72,8 @@ EvoScript::Script *EvoScript::Script::Allocate(const std::string &name, MethodPo
 
 EvoScript::Script::~Script() {
     if (m_state) {
-        ES_ERROR("Script() : state isn't free! Memory leak possible...");
+        m_state->Unload();
+        delete m_state;
+        m_state = nullptr;
     }
 }

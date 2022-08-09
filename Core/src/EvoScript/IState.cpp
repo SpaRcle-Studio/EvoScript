@@ -3,6 +3,8 @@
 //
 
 #include <EvoScript/Win32State.hpp>
+#include <EvoScript/IState.h>
+
 
 EvoScript::IState *EvoScript::IState::Allocate(const std::string &path) {
     #ifdef WIN32

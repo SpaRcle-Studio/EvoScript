@@ -40,6 +40,7 @@ namespace EvoScript {
         std::vector<std::string> m_typedefs;
         std::vector<EvoEnum>     m_enums;
         std::vector<Class>       m_classes;
+        std::vector<Method>      m_functions;
 
         Class* FindClass(const std::string& name) {
             for (auto& _class : m_classes)
@@ -103,6 +104,11 @@ namespace EvoScript {
             for (const auto& _class : m_classes)
                 result += _class.ToString() + "\n\n";
 
+            for (auto&& function : m_functions) {
+                result += function.GetSetterWithVar().append("\n");
+                result += function.ToString();
+            }
+
             result += "#endif";
 
             return result;
@@ -141,6 +147,13 @@ namespace EvoScript {
                 const std::string& _overrideClass = "",
                 Publicity publicity = Publicity::Public);
 
+        bool RegisterFunction(
+                const SetterFn& setter,
+                const std::string& methodName,
+                const std::string& returnType,
+                const std::vector<std::string>& argTypes,
+                const std::string& header);
+
         bool RegisterMethod(
                 const std::string& className,
                 const std::string& methodName,
@@ -149,6 +162,8 @@ namespace EvoScript {
                 MethodType type,
                 const std::string& _overrideClass = "",
                 Publicity publicity = Publicity::Public);
+
+        bool RegisterHeader(const std::string& name, const std::set<std::string>& includes = {});
 
         bool RegisterNewClass(
                 const std::string& name,
@@ -239,5 +254,15 @@ namespace EvoScript {
         if (fun) fun([](_args) -> _returnType { _function });                                                    \
     };                                                                                                           \
     _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, strArgs, EvoScript::Static, "", _pub); }    \
+
+#define ESRegisterStaticFunc(_addrTable, _method, _returnType, _args, header, _function) {                       \
+    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                                        \
+    auto fun = [] (EvoScript::IState* state) {                                                                   \
+        typedef void(*SetterFnPtr)(const ES_FUNCTION<_returnType (_args)>&);                                     \
+        auto fun = state->GetFunction<SetterFnPtr>(                                                              \
+            std::string(#_method).append("FnPtrSetter").c_str());                                                \
+        if (fun) fun([](_args) -> _returnType { _function });                                                    \
+    };                                                                                                           \
+    _addrTable->RegisterFunction(fun, #_method, #_returnType, strArgs, header); }                                \
 
 #endif //EVOSCRIPT_ADDRESSTABLEGEN_H

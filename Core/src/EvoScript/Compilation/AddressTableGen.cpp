@@ -95,6 +95,51 @@ bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
         file.close();
     }
 
+    /// Allocator
+    {
+        std::string path = libFolder + "MemoryAllocator.h";
+        std::ofstream file(path);
+        if (!file.is_open()) {
+            ES_ERROR("AddressTableGen::Save() : failed to create file! \n\tPath: " + path);
+            return false;
+        }
+
+        file <<
+                "//\n// Created by Evo Script code generator on " + Tools::GetData() + " | Author - Monika\n//\n\n"
+                "#ifndef EVOSCRIPTLIB_MEMORY_ALLOCATOR_H\n"
+                "#define EVOSCRIPTLIB_MEMORY_ALLOCATOR_H\n"
+                "\n"
+                "#ifndef ES_EXTERN\n"
+                "\t#define ES_EXTERN extern \"C\" __declspec(dllexport)\n"
+                "#endif"
+                "\n"
+                "typedef void*(*AllocateMemoryFnPtr)(size_t sz);\n"
+                "typedef void(*FreeMemoryFnPtr)(void* ptr);\n"
+                "\n"
+                "AllocateMemoryFnPtr g_allocateMemory = nullptr;\n"
+                "FreeMemoryFnPtr g_freeMemory = nullptr;\n"
+                "\n"
+                "ES_EXTERN void SetAllocateMemoryFnPtr(AllocateMemoryFnPtr fn) {\n"
+                "\tg_allocateMemory = fn;\n"
+                "}\n"
+                "\n"
+                "ES_EXTERN void SetFreeMemoryFnPtr(FreeMemoryFnPtr fn) {\n"
+                "\tg_freeMemory = fn;\n"
+                "}\n"
+                "\n"
+                "void* ESMemoryAlloc(size_t sz) {\n"
+                "    return g_allocateMemory(sz);\n"
+                "}\n"
+                "\n"
+                "void ESMemoryFree(void* ptr) {\n"
+                "    g_freeMemory(ptr);\n"
+                "}\n"
+                "\n"
+                "#endif //EVOSCRIPTLIB__MEMORY_ALLOCATOR_H";
+
+        file.close();
+    }
+
     return true;
 }
 
@@ -163,4 +208,44 @@ bool EvoScript::AddressTableGen::RegisterMethod(const std::string &className, co
                                                 EvoScript::Publicity publicity)
 {
     return RegisterMethod(SetterFn(), className, methodName, returnType, argTypes, type, _overrideClass, publicity);
+}
+
+bool EvoScript::AddressTableGen::RegisterFunction(const EvoScript::AddressTableGen::SetterFn &setter,
+                                                  const std::string &methodName,
+                                                  const std::string &returnType,
+                                                  const std::vector<std::string> &argTypes,
+                                                  const std::string& header) {
+    HashCombine("Function_" + methodName);
+
+    if (setter) {
+        AddMethodPointer(setter);
+    }
+
+    Method method = {
+            .m_name       = methodName,
+            .m_class      = "",
+            .m_return     = returnType,
+            .m_args       = argTypes,
+            .m_type       = MethodType::Normal,
+            .m_override   = "",
+            .m_public     = Publicity::Unknown,
+            .m_stringArgs = "",
+            .m_argNames   = ""
+    };
+    method.MathArguments();
+
+    m_headers[header].m_functions.emplace_back(method);
+
+    return true;
+}
+
+bool EvoScript::AddressTableGen::RegisterHeader(const std::string &name, const std::set<std::string>& includes) {
+    if (m_headers.count(name) == 1) {
+        ES_ERROR("AddressTableGen::RegisterHeader() : header already registered!");
+        return false;
+    }
+
+    m_headers[name] = { name, { includes }, { /* incomplete */ }, { }, {  }, { } };
+
+    return true;
 }

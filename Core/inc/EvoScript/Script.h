@@ -12,6 +12,14 @@
 namespace EvoScript {
     class Compiler;
 
+    static void* ESAllocateMemory(size_t sz) {
+        return new char[sz];
+    }
+
+    static void ESFreeMemory(void* ptr) {
+        delete[] (char*)ptr;
+    }
+
     class Script : private Tools::NonCopyable {
         using MethodPointers = std::vector<std::function<void(EvoScript::IState*)>>;
     private:
@@ -68,27 +76,11 @@ namespace EvoScript {
         ES_NODISCARD std::string GetPath()   const { return m_path;  }
         ES_NODISCARD std::string GetName()   const { return m_name;  }
 
-        ES_NODISCARD bool Awake() const { ES_CALL_DLL(m_awake) }
-        ES_NODISCARD bool Start() const { ES_CALL_DLL(m_start) }
-        ES_NODISCARD bool Close() const { ES_CALL_DLL(m_close) }
-        ES_NODISCARD bool Update(float dt) const { ES_CALL_DLL_ARGS(m_update, (dt)) }
-        ES_NODISCARD bool FixedUpdate() const { ES_CALL_DLL(m_fixed) }
-        ES_NODISCARD bool OnGUI() const { ES_CALL_DLL(m_onGUI) }
-
     public:
         bool Load(const std::string& path, Compiler& compiler, bool compile);
-        void Destroy();
 
     private:
         bool HookFunctions();
-
-    public:
-        Typedefs::AwakeFnPtr       m_awake  = nullptr;
-        Typedefs::StartFnPtr       m_start  = nullptr;
-        Typedefs::CloseFnPtr       m_close  = nullptr;
-        Typedefs::UpdateFnPtr      m_update = nullptr;
-        Typedefs::FixedUpdateFnPtr m_fixed  = nullptr;
-        Typedefs::OnGUIFnPtr       m_onGUI  = nullptr;
 
     private:
         std::string    m_name           = "None";

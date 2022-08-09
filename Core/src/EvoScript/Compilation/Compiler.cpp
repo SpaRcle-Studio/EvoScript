@@ -40,7 +40,7 @@ bool EvoScript::Compiler::CheckApiHash(const std::string &pathToScript, bool deb
 
     auto currHash = std::pair(debug, std::vector<std::string>{ m_apiVersion });
 
-    if (Tools::FileExists(fullPath)) {
+    if (Tools::IsExists(fullPath)) {
         auto loadHash = Tools::LoadHashInfo(fullPath);
         if (Tools::HashEquals(loadHash, currHash))
             return true;
@@ -60,7 +60,7 @@ bool EvoScript::Compiler::CheckSourceHash(const std::string& source, const std::
 
     auto currHash = std::pair(debug, Tools::GetHashAllFilesInDir(source));
 
-    if (Tools::FileExists(fullPath)) {
+    if (Tools::IsExists(fullPath)) {
         auto loadHash = Tools::LoadHashInfo(fullPath);
         if (Tools::HashEquals(loadHash, currHash))
             return true;
@@ -90,13 +90,11 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
         const auto source = Tools::FixPath(script->GetPath());
 
         const auto name   = EvoScript::Tools::BackReadTo(script->GetName(), '/');
-        const auto build  = path + "/Build/";
         const auto module = path + "/Module" + IState::Extension;
 
         const bool isDebug = script->IsDebug();
 
         Tools::CreatePath(path);
-        Tools::CreatePath(build);
 
         /// чтобы все хеш суммы сразу создались, нужно их проверить
         uint32_t hashCompare = static_cast<uint32_t>(CheckSourceHash(source, path, isDebug))
@@ -106,11 +104,18 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
             if (TryLoad(script))
                 return true;
         }
-        else
+        else if (Tools::IsExists(module)) {
             Tools::RemoveFile(module);
+        }
 
-        for (const auto& file : Tools::GetAllFilesInDirWithExt(build + (script->IsDebug() ? "Debug" : "Release"), IState::Extension))
-            Tools::RemoveFile(file);
+        ///auto&& build  = path + "/Build/" + std::to_string(Tools::RandomUInt32()) + "/";
+        auto&& build  = path + "/Build/";
+
+        /// Чистим папку сборки, чтобы не возникло конфликтов
+        if (Tools::IsExists(build) && !Tools::Delete(build)) {
+            ES_ERROR("Compiler::Compile() : failed to delete build folder!");
+        }
+        Tools::CreatePath(build);
 
         ES_LOG("Compiler::Compile() : compile \"" + script->GetName() + "\" script...");
 
@@ -134,7 +139,7 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
         else
             ES_ERROR("Compiler::Compile() : file not found! \n\tPath: " + module);
 
-        if (success = Tools::FileExists(module); success)
+        if (success = Tools::IsExists(module); success)
             ES_LOG("Compiler::Compile() : successfully compiled the \"" + script->GetName() + "\" script!")
         else
             ES_ERROR("Compiler::Compile() : failed to compile the \"" + script->GetName() + "\" script!")
@@ -150,17 +155,22 @@ ret:
         goto ret;
     }
     else {
-        auto id = this->FindFreeID(name);
-        find->second.emplace_back(id);
+        auto&& id = FindFreeID(name);
 
         const std::string module = m_cachePath + "/Scripts/" + name + "/Module" + IState::Extension;
         const std::string copy = m_cachePath + "/Modules/" + name + "/Module-" + std::to_string(id) + IState::Extension;
+
+        if (Tools::IsExists(copy)) {
+            goto ret;
+        }
 
         Tools::CreatePath(m_cachePath + "/Modules/" + name);
         if (!Tools::Copy(module, copy)) {
             ES_ERROR("Compiler::AllocateState() : failed to copy file! \n\tSource:" + module + "\n\tDestination: " + copy);
             return nullptr;
         }
+
+        find->second.emplace_back(id);
 
         return IState::Allocate(copy);
     }
@@ -170,11 +180,12 @@ uint32_t EvoScript::Compiler::FindFreeID(const std::string &pathToModule) {
     if (auto find = m_moduleCopies.find(pathToModule); find == m_moduleCopies.end()) {
         ES_ERROR("Compiler::FindFreeID() : module not found! Something went wrong...");
         return UINT32_MAX;
-    } else {
+    }
+    else {
     ret:
-        uint32_t id = Tools::Random();
+        uint32_t id = Tools::RandomUInt32();
 
-        auto[key, value] { *find };
+        auto[key, value] = *find;
 
         for (const auto& copy : value)
             if (id == copy)
@@ -211,7 +222,7 @@ bool EvoScript::Compiler::TryLoad(EvoScript::Script *script) {
     const auto path = m_cachePath + "/Scripts/" + Tools::FixPath(script->GetName());
     const auto module = path + "/Module" + IState::Extension;
 
-    if (Tools::FileExists(module)) {
+    if (Tools::IsExists(module)) {
         ES_LOG("Compiler::Load() : successfully loaded the \"" + script->GetName() + "\" script!");
         return true;
     }

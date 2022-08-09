@@ -38,25 +38,16 @@ namespace EvoScript {
     class Win32State : public IState {
     public:
         Win32State(const Win32State&) = delete;
-        Win32State(const std::string& path) : IState(path) { }
+        explicit Win32State(const std::string& path) : IState(path) { }
     private:
-        ~Win32State() = default;
+        ~Win32State() override = default;
     private:
         HINSTANCE m_hDLL = nullptr;
     public:
         void* GetFunctionImpl(const char* name) override {
             return reinterpret_cast<void*>(::GetProcAddress(m_hDLL, name));
         }
-        bool Destroy() override {
-            if (Tools::FileExists(m_path)) {
-                Tools::RemoveFile(m_path);
-                return true;
-            } else
-                return false;
-        }
-        void Free() override {
-            delete this;
-        }
+
         bool Unload() override {
             if (!m_hDLL) {
                 ES_ERROR("Win32State::Unload() : dll isn't loaded!");
@@ -76,7 +67,7 @@ namespace EvoScript {
                 return false;
             }
 
-            if (!Tools::FileExists(m_path)) {
+            if (!Tools::IsExists(m_path)) {
                 ES_ERROR("Win32State::Load() : file is not exists! \n\tPath: " + m_path)
                 return false;
             }
