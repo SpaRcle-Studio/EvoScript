@@ -5,8 +5,6 @@
 #ifndef EVOSCRIPT_TYPEDEFS_H
 #define EVOSCRIPT_TYPEDEFS_H
 
-#include <EvoScript/Tools/ESAny.h>
-
 #include <any>
 #include <vector>
 #include <string>

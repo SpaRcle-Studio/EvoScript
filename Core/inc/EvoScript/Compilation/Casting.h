@@ -47,14 +47,22 @@ namespace EvoScript {
     };
 }
 
-#define ESRegisterDynamicCast(generator, _nsFrom, _from, _nsTo, _to) {                             \
-    auto fun = [] (EvoScript::IState* state) {                                                     \
-        typedef void(*SetterFnPtr)(const std::function<_nsTo _to* (_nsFrom _from* from)>&);        \
-        const auto name = std::string("DynamicCast")                                               \
-            .append(#_from).append("To").append(#_to).append("FnPtrSetter");                       \
-        if (auto fun = state->GetFunction<SetterFnPtr>(name.c_str()))                              \
-            fun([](_nsFrom _from* from) -> _nsTo _to* { return dynamic_cast<_nsTo _to*>(from); }); \
-    };                                                                                             \
-    generator->RegisterCast(fun, #_from, #_to, EvoScript::CastingType::Dynamic); }                 \
+#define ESRegisterDynamicCast(generator, _from, _to) {                                 \
+    auto fun1to2 = [] (EvoScript::IState* state) {                                     \
+        typedef void(*SetterFnPtr)(const std::function<_to* (_from* from)>&);          \
+        const auto name = std::string("DynamicCast")                                   \
+            .append(#_from).append("To").append(#_to).append("FnPtrSetter");           \
+        if (auto fun = state->GetFunction<SetterFnPtr>(name.c_str()))                  \
+            fun([](_from* from) -> _to* { return dynamic_cast<_to*>(from); });         \
+    };                                                                                 \
+    auto fun2to1 = [] (EvoScript::IState* state) {                                     \
+        typedef void(*SetterFnPtr)(const std::function<_from* (_to* from)>&);          \
+        const auto name = std::string("DynamicCast")                                   \
+            .append(#_to).append("To").append(#_from).append("FnPtrSetter");           \
+        if (auto fun = state->GetFunction<SetterFnPtr>(name.c_str()))                  \
+            fun([](_to* from) -> _from* { return dynamic_cast<_from*>(from); });       \
+    };                                                                                 \
+    generator->RegisterCast(fun1to2, #_from, #_to, EvoScript::CastingType::Dynamic);   \
+    generator->RegisterCast(fun2to1, #_to, #_from, EvoScript::CastingType::Dynamic); } \
 
 #endif //GAMEENGINE_CASTING_H

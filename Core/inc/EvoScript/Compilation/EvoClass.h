@@ -49,6 +49,13 @@ namespace EvoScript {
 
             result += " {\n";
 
+            /// Запрещаем копировать, удалять и создававайть экземпляры класса
+            result += "public:\n";
+            result += "\t" + m_name + "() = delete;\n";
+            result += "\t~" + m_name + "() = delete;\n";
+            result += "\t" + m_name + "(" + m_name + " &) = delete;\n";
+            result += "\t" + m_name + "(const " + m_name + " &) = delete;\n";
+
             Publicity currentPub = Unknown;
             for (const Property& property : m_properties) {
                 if (currentPub != property.m_pub) {
