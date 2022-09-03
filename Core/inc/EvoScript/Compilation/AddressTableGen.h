@@ -200,6 +200,8 @@ namespace EvoScript {
 #define ESArg6(a1, a2, a3, a4, a5, a6) a1, a2, a3, a4, a5, a6
 #define ESArg7(a1, a2, a3, a4, a5, a6, a7) a1, a2, a3, a4, a5, a6, a7
 
+#define ESMakePair(type1, type2) std::pair<type1, type2>
+
 #define ESRegisterMethodArg0(_pub, _addrTable, _class, _method, _returnType) {                                   \
     auto fun = [] (EvoScript::IState* state) {                                                                   \
         typedef void(*SetterFnPtr)(const ES_FUNCTION<_returnType (_class*)>&);                                   \
@@ -216,6 +218,16 @@ namespace EvoScript {
         auto fun = state->GetFunction<SetterFnPtr>(                                                              \
             std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                                \
         if (fun) fun([](_class* ptr, _args) -> _returnType { return ptr->_method(_names); });                    \
+    };                                                                                                           \
+    _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, strArgs, EvoScript::Normal, "", _pub); }    \
+
+#define ESRegisterCustomMethod(_pub, _addrTable, _class, _method, _returnType, _args, _function) {               \
+    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                                        \
+    auto fun = [] (EvoScript::IState* state) {                                                                   \
+        typedef void(*SetterFnPtr)(const ES_FUNCTION<_returnType (_class*, _args)>&);                            \
+        auto fun = state->GetFunction<SetterFnPtr>(                                                              \
+            std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                                \
+        if (fun) fun([](_class* ptr, _args) -> _returnType { _function });                                       \
     };                                                                                                           \
     _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, strArgs, EvoScript::Normal, "", _pub); }    \
 
