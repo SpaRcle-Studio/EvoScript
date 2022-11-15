@@ -8,8 +8,11 @@
 #include <string>
 #include <algorithm>
 #include <sstream>
-#include <vector>
 #include <ctime>
+#include <sys/stat.h>
+#include <fstream>
+#include <list>
+#include <vector>
 
 namespace EvoScript::Tools {
     static std::vector<std::string> RemoveFirstSpaces(std::vector<std::string> strings) {
@@ -104,9 +107,10 @@ namespace EvoScript::Tools {
     }
 
     static std::vector<std::string> GetArgs(const std::string& str) {
-        if (str.size() <= 2)
-            return { };
-        //std::string args = Tools::ReadTo(str, ')');
+        if (str.size() <= 2) {
+            return {};
+        }
+
         auto left = str.find('(');
         auto right = str.find(')');
 

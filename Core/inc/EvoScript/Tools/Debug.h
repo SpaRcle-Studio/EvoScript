@@ -10,8 +10,8 @@
 namespace EvoScript::Tools {
     class ESDebug {
     public:
-        ESDebug()               = delete;
-        ~ESDebug()              = delete;
+        ESDebug() = delete;
+        ~ESDebug() = delete;
         ESDebug(const ESDebug&) = delete;
 
     public:

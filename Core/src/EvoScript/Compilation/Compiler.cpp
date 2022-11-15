@@ -2,13 +2,11 @@
 // Created by Nikita on 03.07.2021.
 //
 
-#include "EvoScript/Compilation/Compiler.h"
-
+#include <EvoScript/Compilation/Compiler.h>
 #include <EvoScript/Tools/Randomizer.h>
-#include <iostream>
 
 bool EvoScript::Compiler::ClearModulesCache(const std::string& path) {
-    const auto dirs = Tools::GetAllDirsInDir(path);
+    const auto dirs = Tools::ESFileSystem::GetAllFoldersInDir(path);
 
     /// предполагается, что dll файлы лежат в конкретной директории, и там кроме них нет ничего больше
     if (!dirs.empty()) {
@@ -16,8 +14,9 @@ bool EvoScript::Compiler::ClearModulesCache(const std::string& path) {
             if (!ClearModulesCache(dir))
                 return false;
 
-            if (Tools::IsDirectoryEmpty(dir))
-                Tools::RemoveFolder(dir);
+            if (Tools::IsDirectoryEmpty(dir)) {
+                Tools::ESFileSystem::Delete(dir);
+            }
         }
 
         return true;
@@ -29,7 +28,7 @@ bool EvoScript::Compiler::ClearModulesCache(const std::string& path) {
             ES_WARN("Compiler::ClearModulesCache() : a suspicious file has been detected! I can't perform automatic cache cleanup! \n\tFile: " + file);
             return false;
         }
-        Tools::RemoveFile(file);
+        Tools::ESFileSystem::Delete(file);
     }
 
     return true;
@@ -40,10 +39,11 @@ bool EvoScript::Compiler::CheckApiHash(const std::string &pathToScript, bool deb
 
     auto currHash = std::pair(debug, std::vector<std::string>{ m_apiVersion });
 
-    if (Tools::IsExists(fullPath)) {
+    if (Tools::ESFileSystem::IsExists(fullPath)) {
         auto loadHash = Tools::LoadHashInfo(fullPath);
-        if (Tools::HashEquals(loadHash, currHash))
+        if (Tools::HashEquals(loadHash, currHash)) {
             return true;
+        }
         else {
             Tools::SaveHashInfo(fullPath, currHash);
         }
@@ -60,7 +60,7 @@ bool EvoScript::Compiler::CheckSourceHash(const std::string& source, const std::
 
     auto currHash = std::pair(debug, Tools::GetHashAllFilesInDir(source));
 
-    if (Tools::IsExists(fullPath)) {
+    if (Tools::ESFileSystem::IsExists(fullPath)) {
         auto loadHash = Tools::LoadHashInfo(fullPath);
         if (Tools::HashEquals(loadHash, currHash))
             return true;
@@ -104,15 +104,15 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
             if (TryLoad(script))
                 return true;
         }
-        else if (Tools::IsExists(module)) {
-            Tools::RemoveFile(module);
+        else if (Tools::ESFileSystem::IsExists(module)) {
+            Tools::ESFileSystem::Delete(module);
         }
 
         ///auto&& build  = path + "/Build/" + std::to_string(Tools::RandomUInt32()) + "/";
         auto&& build  = path + "/Build/";
 
         /// Чистим папку сборки, чтобы не возникло конфликтов
-        if (Tools::IsExists(build) && !Tools::Delete(build)) {
+        if (Tools::ESFileSystem::IsExists(build) && !Tools::ESFileSystem::Delete(build)) {
             ES_ERROR("Compiler::Compile() : failed to delete build folder!");
         }
         Tools::CreatePath(build);
@@ -134,15 +134,19 @@ bool EvoScript::Compiler::Compile(EvoScript::Script* script) {
         if (m_generator.find("Visual Studio") != std::string::npos)
             postfix = script->IsDebug() ? "/Debug" : "/Release";
 
-        if (auto files = Tools::GetAllFilesInDirWithExt(build + postfix, IState::Extension); files.size() == 1)
-            Tools::Copy(files[0], module);
-        else
+        if (auto files = Tools::GetAllFilesInDirWithExt(build + postfix, IState::Extension); files.size() == 1) {
+            Tools::ESFileSystem::Copy(files[0], module);
+        }
+        else {
             ES_ERROR("Compiler::Compile() : file not found! \n\tPath: " + module);
+        }
 
-        if (success = Tools::IsExists(module); success)
-            ES_LOG("Compiler::Compile() : successfully compiled the \"" + script->GetName() + "\" script!")
-        else
-            ES_ERROR("Compiler::Compile() : failed to compile the \"" + script->GetName() + "\" script!")
+        if (success = Tools::ESFileSystem::IsExists(module); success) {
+            ES_LOG("Compiler::Compile() : successfully compiled the \"" + script->GetName() + "\" script!");
+        }
+        else {
+            ES_ERROR("Compiler::Compile() : failed to compile the \"" + script->GetName() + "\" script!");
+        }
     }
 
     return success;
@@ -160,12 +164,12 @@ ret:
         const std::string module = m_cachePath + "/Scripts/" + name + "/Module" + IState::Extension;
         const std::string copy = m_cachePath + "/Modules/" + name + "/Module-" + std::to_string(id) + IState::Extension;
 
-        if (Tools::IsExists(copy)) {
+        if (Tools::ESFileSystem::IsExists(copy)) {
             goto ret;
         }
 
         Tools::CreatePath(m_cachePath + "/Modules/" + name);
-        if (!Tools::Copy(module, copy)) {
+        if (!Tools::ESFileSystem::Copy(module, copy)) {
             ES_ERROR("Compiler::AllocateState() : failed to copy file! \n\tSource:" + module + "\n\tDestination: " + copy);
             return nullptr;
         }
@@ -222,7 +226,7 @@ bool EvoScript::Compiler::TryLoad(EvoScript::Script *script) {
     const auto path = m_cachePath + "/Scripts/" + Tools::FixPath(script->GetName());
     const auto module = path + "/Module" + IState::Extension;
 
-    if (Tools::IsExists(module)) {
+    if (Tools::ESFileSystem::IsExists(module)) {
         ES_LOG("Compiler::Load() : successfully loaded the \"" + script->GetName() + "\" script!");
         return true;
     }

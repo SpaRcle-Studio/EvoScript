@@ -23,4 +23,8 @@
 #define ES_NODISCARD [[nodiscard]]
 #define ES_INLINE inline
 
+#ifdef WIN32
+    #define ES_WIN32
+#endif
+
 #endif //EVOSCRIPT_MACROS_H

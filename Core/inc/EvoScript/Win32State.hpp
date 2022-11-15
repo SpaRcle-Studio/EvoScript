@@ -67,7 +67,7 @@ namespace EvoScript {
                 return false;
             }
 
-            if (!Tools::IsExists(m_path)) {
+            if (!Tools::ESFileSystem::IsExists(m_path)) {
                 ES_ERROR("Win32State::Load() : file is not exists! \n\tPath: " + m_path)
                 return false;
             }
