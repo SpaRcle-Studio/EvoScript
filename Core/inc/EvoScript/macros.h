@@ -23,6 +23,10 @@
 #define ES_NODISCARD [[nodiscard]]
 #define ES_INLINE inline
 
+#ifdef _MSC_VER
+    #define ES_MSVC
+#endif
+
 #ifdef WIN32
     #define ES_WIN32
 #endif

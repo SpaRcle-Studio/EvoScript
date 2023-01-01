@@ -22,7 +22,8 @@ namespace EvoScript {
         IState* AllocateState(const std::string& path);
 
         void SetApiVersion(std::string version);
-        void SetGenerator(std::string generator);
+
+        void AddIncludePath(const std::string& path);
 
         bool Compile(Script* script);
 
@@ -38,12 +39,13 @@ namespace EvoScript {
         bool CheckApiHash(const std::string& pathToScript, bool debug);
 
     private:
-        std::string  m_apiVersion    = "None";
-        std::string  m_generator     = "None";
-        std::string  m_cachePath     = "None";
+        std::vector<std::string> m_includes;
 
-        std::recursive_mutex m_mutex = std::recursive_mutex();
-        ModuleCopies m_moduleCopies  = ModuleCopies();
+        std::string m_apiVersion = "None";
+        std::string m_cachePath  = "None";
+
+        std::recursive_mutex m_mutex;
+        ModuleCopies m_moduleCopies;
 
     };
 }

@@ -31,6 +31,10 @@ namespace EvoScript::Tools {
         return true;
     }
 
+    static std::string GetFileHash(const std::string& file) {
+        return MD5().digestFile(const_cast<char*>(file.c_str()));
+    }
+
     static std::vector<std::string> GetHashAllFilesInDir(const std::string& dir) {
         auto result = std::vector<std::string>();
 

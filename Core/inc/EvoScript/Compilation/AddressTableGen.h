@@ -231,6 +231,15 @@ namespace EvoScript {
     };                                                                                                           \
     _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, strArgs, EvoScript::Normal, "", _pub); }    \
 
+#define ESRegisterCustomMethodArg0(_pub, _addrTable, _class, _method, _returnType, _function) {                  \
+    auto fun = [] (EvoScript::IState* state) {                                                                   \
+        typedef void(*SetterFnPtr)(const ES_FUNCTION<_returnType (_class*)>&);                                   \
+        auto fun = state->GetFunction<SetterFnPtr>(                                                              \
+            std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                                \
+        if (fun) fun([](_class* ptr) -> _returnType { _function });                                              \
+    };                                                                                                           \
+    _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, { }, EvoScript::Normal, "", _pub); }        \
+
 #define ESRegisterVirtualMethodArg0(_pub, _addrTable, _class, _method, _returnType) {                            \
     _addrTable->RegisterMethod(#_class, #_method, #_returnType, {}, EvoScript::Virtual, "", _pub); }             \
 

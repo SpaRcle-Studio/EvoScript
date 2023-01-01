@@ -13,6 +13,7 @@
 #include <fstream>
 #include <list>
 #include <vector>
+#include <stdarg.h>
 
 namespace EvoScript::Tools {
     static std::vector<std::string> RemoveFirstSpaces(std::vector<std::string> strings) {
@@ -120,6 +121,33 @@ namespace EvoScript::Tools {
         std::vector<std::string> strArgs = EvoScript::Tools::RemoveFirstSpaces(EvoScript::Tools::Split(args));
         return strArgs;
     }
+
+    static std::string Format(const char* fmt, ...) {
+        va_list args;
+        va_start(args, fmt);
+        std::vector<char> v(1024);
+        while (true) {
+            va_list args2;
+            va_copy(args2, args);
+            int res = vsnprintf(v.data(), v.size(), fmt, args2);
+            if ((res >= 0) && (res < static_cast<int>(v.size()))) {
+                va_end(args);
+                va_end(args2);
+                return std::string(v.data());
+            }
+            size_t size;
+            if (res < 0)
+                size = v.size() * 2;
+            else
+                size = static_cast<size_t>(res) + 1;
+            v.clear();
+            v.resize(size);
+            va_end(args2);
+        }
+    }
 }
+
+#define ES_FORMAT(fmt, ...) EvoScript::Tools::Format(fmt, __VA_ARGS__)
+#define ES_FORMAT_C(fmt, ...) EvoScript::Tools::Format(fmt, __VA_ARGS__).c_str()
 
 #endif //EVOSCRIPT_STRINGUTILS_H
