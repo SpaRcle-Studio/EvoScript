@@ -56,10 +56,12 @@ namespace EvoScript {
             auto loadHash = Tools::LoadHashInfo(fullPath);
             if (Tools::HashEquals(loadHash, currHash)) {
                 return true;
-            } else {
+            }
+            else {
                 Tools::SaveHashInfo(fullPath, currHash);
             }
-        } else {
+        }
+        else {
             Tools::SaveHashInfo(fullPath, currHash);
         }
 
@@ -143,12 +145,13 @@ namespace EvoScript {
                 includes.append("/I\"").append(include).append("\" ");
             }
 
-            auto&& command = ES_FORMAT("cd \"%s\" && call \"%s\" && \"%s\" %s %s /std:c++17 /nologo /O1 /Os /GF /GS- %s.cpp",
+            auto&& command = ES_FORMAT("cd \"%s\" && call \"%s\" && \"%s\" %s %s /std:c++17 /nologo /O1 %s /Os /GF /GS- %s.cpp",
                 build.c_str(),
                 vars.c_str(),
                 compiler.c_str(),
                 includes.c_str(),
                 script->IsDebug() ? "/LDd" : "/LD",
+                m_compilePDB ? " /ZI " : " ",
                 source.c_str()
             );
 

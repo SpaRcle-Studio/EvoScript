@@ -27,6 +27,8 @@ namespace EvoScript {
 
         bool Compile(Script* script);
 
+        void SetCompilePDB(bool value) { m_compilePDB = value; }
+
         bool TryLoad(Script* script);
         bool Load(Script* script);
 
@@ -40,6 +42,8 @@ namespace EvoScript {
 
     private:
         std::vector<std::string> m_includes;
+
+        bool m_compilePDB = false;
 
         std::string m_apiVersion = "None";
         std::string m_cachePath  = "None";
