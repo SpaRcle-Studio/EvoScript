@@ -20,7 +20,7 @@ namespace EvoScript::Tools {
     };
 
     static const std::vector<std::string> VS_TYPES = {
-            "Professional", "Community", "Enterprise"
+            "Professional", "Community", "Enterprise", "BuildTools"
     };
 
     static std::string FindMSVCVars64() {
