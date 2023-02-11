@@ -145,7 +145,7 @@ namespace EvoScript {
                 includes.append("/I\"").append(include).append("\" ");
             }
 
-            auto&& command = ES_FORMAT("cd \"%s\" && call \"%s\" && \"%s\" %s %s /std:c++17 /nologo /O1 %s /Os /GF /GS- %s.cpp",
+            auto&& command = ES_FORMAT("cd \"%s\" && call \"%s\" && \"%s\" %s %s /std:c++17 /nologo /O1 %s /Os /GF /GS- \"%s.cpp\"",
                 build.c_str(),
                 vars.c_str(),
                 compiler.c_str(),
