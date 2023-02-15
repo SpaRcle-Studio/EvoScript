@@ -9,82 +9,82 @@
 #include <string.h>
 
 namespace EvoScript::Tools {
-    static unsigned char PADDING[64] = {
+    static unsigned char MD5_PADDING[64] = {
             0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-#pragma region MD5 defines
-// Constants for MD5Transform routine.
-#define S11 7
-#define S12 12
-#define S13 17
-#define S14 22
-#define S21 5
-#define S22 9
-#define S23 14
-#define S24 20
-#define S31 4
-#define S32 11
-#define S33 16
-#define S34 23
-#define S41 6
-#define S42 10
-#define S43 15
-#define S44 21
+    typedef unsigned char MD5_BYTE;
 
-// F, G, H and I are basic MD5 functions.
-#define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
-#define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
-#define H(x, y, z) ((x) ^ (y) ^ (z))
-#define I(x, y, z) ((y) ^ ((x) | (~z)))
+    // POINTER defines a generic pointer type
+    typedef unsigned char *MD5_POINTER;
 
-// ROTATE_LEFT rotates x left n bits.
-#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
+    // UINT2 defines a two byte word
+    typedef unsigned short int MD5_UINT2;
 
-// FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
-// Rotation is separate from addition to prevent recomputation.
-#define FF(a, b, c, d, x, s, ac) { \
-  (a) += F ((b), (c), (d)) + (x) + (UINT4)(ac); \
-  (a) = ROTATE_LEFT ((a), (s)); \
-  (a) += (b); \
-  }
-#define GG(a, b, c, d, x, s, ac) { \
-  (a) += G ((b), (c), (d)) + (x) + (UINT4)(ac); \
-  (a) = ROTATE_LEFT ((a), (s)); \
-  (a) += (b); \
-      }
-#define HH(a, b, c, d, x, s, ac) { \
-  (a) += H ((b), (c), (d)) + (x) + (UINT4)(ac); \
-  (a) = ROTATE_LEFT ((a), (s)); \
-  (a) += (b); \
-      }
-#define II(a, b, c, d, x, s, ac) { \
-  (a) += I ((b), (c), (d)) + (x) + (UINT4)(ac); \
-  (a) = ROTATE_LEFT ((a), (s)); \
-  (a) += (b); \
-      }
-#pragma endregion
+    // UINT4 defines a four byte word
+    typedef unsigned long int MD5_UINT4;
 
-    typedef unsigned char BYTE;
+    #pragma region MD5 defines
+        // Constants for MD5Transform routine.
+        #define S11 7
+        #define S12 12
+        #define S13 17
+        #define S14 22
+        #define S21 5
+        #define S22 9
+        #define S23 14
+        #define S24 20
+        #define S31 4
+        #define S32 11
+        #define S33 16
+        #define S34 23
+        #define S41 6
+        #define S42 10
+        #define S43 15
+        #define S44 21
 
-// POINTER defines a generic pointer type
-    typedef unsigned char *POINTER;
+        // F, G, H and I are basic MD5 functions.
+        #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
+        #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
+        #define H(x, y, z) ((x) ^ (y) ^ (z))
+        #define I(x, y, z) ((y) ^ ((x) | (~z)))
 
-// UINT2 defines a two byte word
-    typedef unsigned short int UINT2;
+        // ROTATE_LEFT rotates x left n bits.
+        #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
 
-// UINT4 defines a four byte word
-    typedef unsigned long int UINT4;
+        // FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
+        // Rotation is separate from addition to prevent recomputation.
+        #define FF(a, b, c, d, x, s, ac) { \
+          (a) += F ((b), (c), (d)) + (x) + (MD5_UINT4)(ac); \
+          (a) = ROTATE_LEFT ((a), (s)); \
+          (a) += (b); \
+          }
+        #define GG(a, b, c, d, x, s, ac) { \
+          (a) += G ((b), (c), (d)) + (x) + (MD5_UINT4)(ac); \
+          (a) = ROTATE_LEFT ((a), (s)); \
+          (a) += (b); \
+              }
+        #define HH(a, b, c, d, x, s, ac) { \
+          (a) += H ((b), (c), (d)) + (x) + (MD5_UINT4)(ac); \
+          (a) = ROTATE_LEFT ((a), (s)); \
+          (a) += (b); \
+              }
+        #define II(a, b, c, d, x, s, ac) { \
+          (a) += I ((b), (c), (d)) + (x) + (MD5_UINT4)(ac); \
+          (a) = ROTATE_LEFT ((a), (s)); \
+          (a) += (b); \
+              }
+    #pragma endregion
 
-// convenient object that wraps
-// the C-functions for use in C++ only
+    // convenient object that wraps
+    // the C-functions for use in C++ only
     class MD5 {
     private:
         struct __context_t {
-            UINT4 state[4];                                   /* state (ABCD) */
-            UINT4 count[2];        /* number of bits, modulo 2^64 (lsb first) */
+            MD5_UINT4 state[4];                                   /* state (ABCD) */
+            MD5_UINT4 count[2];        /* number of bits, modulo 2^64 (lsb first) */
             unsigned char buffer[64];                         /* input buffer */
         } context;
 
@@ -92,8 +92,8 @@ namespace EvoScript::Tools {
 
         // The core of the MD5 algorithm is here.
         // MD5 basic transformation. Transforms state based on block.
-        static void MD5Transform(UINT4 state[4], unsigned char block[64]) {
-            UINT4 a = state[0], b = state[1], c = state[2], d = state[3], x[16];
+        static void MD5Transform(MD5_UINT4 state[4], unsigned char block[64]) {
+            MD5_UINT4 a = state[0], b = state[1], c = state[2], d = state[3], x[16];
 
             Decode(x, block, 64);
 
@@ -175,12 +175,12 @@ namespace EvoScript::Tools {
             state[3] += d;
 
             // Zeroize sensitive information.
-            memset((POINTER) x, 0, sizeof(x));
+            memset((MD5_POINTER) x, 0, sizeof(x));
         }
 
         // Encodes input (UINT4) into output (unsigned char). Assumes len is
         // a multiple of 4.
-        static void Encode(unsigned char *output, UINT4 *input, unsigned int len) {
+        static void Encode(unsigned char *output, MD5_UINT4 *input, unsigned int len) {
             unsigned int i, j;
 
             for (i = 0, j = 0; j < len; i++, j += 4) {
@@ -193,12 +193,12 @@ namespace EvoScript::Tools {
 
         // Decodes input (unsigned char) into output (UINT4). Assumes len is
         // a multiple of 4.
-        static void Decode(UINT4 *output, unsigned char *input, unsigned int len) {
+        static void Decode(MD5_UINT4 *output, unsigned char *input, unsigned int len) {
             unsigned int i, j;
 
             for (i = 0, j = 0; j < len; i++, j += 4)
-                output[i] = ((UINT4) input[j]) | (((UINT4) input[j + 1]) << 8) |
-                            (((UINT4) input[j + 2]) << 16) | (((UINT4) input[j + 3]) << 24);
+                output[i] = ((MD5_UINT4) input[j]) | (((MD5_UINT4) input[j + 1]) << 8) |
+                            (((MD5_UINT4) input[j + 2]) << 16) | (((MD5_UINT4) input[j + 3]) << 24);
         }
 
 #pragma endregion
@@ -219,6 +219,9 @@ namespace EvoScript::Tools {
             context.state[1] = 0xefcdab89;
             context.state[2] = 0x98badcfe;
             context.state[3] = 0x10325476;
+
+            memset(digestChars, '0', 32);
+            digestChars[32] = 0;
         }
 
         // MD5 block update operation. Continues an MD5 message-digest
@@ -234,16 +237,16 @@ namespace EvoScript::Tools {
             index = (unsigned int) ((context.count[0] >> 3) & 0x3F);
 
             // Update number of bits
-            if ((context.count[0] += ((UINT4) inputLen << 3))
-                < ((UINT4) inputLen << 3))
+            if ((context.count[0] += ((MD5_UINT4) inputLen << 3))
+                < ((MD5_UINT4) inputLen << 3))
                 context.count[1]++;
-            context.count[1] += ((UINT4) inputLen >> 29);
+            context.count[1] += ((MD5_UINT4) inputLen >> 29);
 
             partLen = 64 - index;
 
             // Transform as many times as possible.
             if (inputLen >= partLen) {
-                memcpy((POINTER) &context.buffer[index], (POINTER) input, partLen);
+                memcpy((MD5_POINTER) &context.buffer[index], (MD5_POINTER) input, partLen);
                 MD5Transform(context.state, context.buffer);
 
                 for (i = partLen; i + 63 < inputLen; i += 64)
@@ -254,7 +257,7 @@ namespace EvoScript::Tools {
                 i = 0;
 
             /* Buffer remaining input */
-            memcpy((POINTER) &context.buffer[index], (POINTER) &input[i], inputLen - i);
+            memcpy((MD5_POINTER) &context.buffer[index], (MD5_POINTER) &input[i], inputLen - i);
         }
 
         // MD5 finalization. Ends an MD5 message-digest operation, writing the
@@ -270,7 +273,7 @@ namespace EvoScript::Tools {
             // Pad out to 56 mod 64.
             index = (unsigned int) ((context.count[0] >> 3) & 0x3f);
             padLen = (index < 56) ? (56 - index) : (120 - index);
-            Update(PADDING, padLen);
+            Update(MD5_PADDING, padLen);
 
             // Append length (before padding)
             Update(bits, 8);
@@ -279,7 +282,7 @@ namespace EvoScript::Tools {
             Encode(digestRaw, context.state, 16);
 
             // Zeroize sensitive information.
-            memset((POINTER) &context, 0, sizeof(context));
+            memset((MD5_POINTER) &context, 0, sizeof(context));
 
             writeToString();
         }
@@ -295,7 +298,7 @@ namespace EvoScript::Tools {
 
     public:
         // an MD5 digest is a 16-byte number (32 hex digits)
-        BYTE digestRaw[16];
+        MD5_BYTE digestRaw[16];
 
         // This version of the digest is actually
         // a "printf'd" version of the digest.
@@ -303,18 +306,42 @@ namespace EvoScript::Tools {
 
         /// Load a file from disk and digest it
         // Digests a file and returns the result.
-        char *digestFile(char *filename) {
+        ES_NODISCARD std::string DigestFile(char *filename) {
             Init();
 
             FILE *file;
 
-            int len;
-            unsigned char buffer[1024];
-
             if ((file = fopen(filename, "rb")) == NULL) {
-                printf("%s can't be opened\n", filename);
+                ES_ERROR("MD5::digestFile() : failed to open file " + std::string(filename));
             }
             else {
+                int len;
+                unsigned char buffer[1024];
+
+                while ((len = fread(buffer, 1, 1024, file))) {
+                    Update(buffer, len);
+                }
+
+                Final();
+
+                fclose(file);
+            }
+
+            return digestChars;
+        }
+
+        ES_NODISCARD std::string TryDigestFile(char *filename) {
+            Init();
+
+            FILE *file;
+
+            if ((file = fopen(filename, "rb")) == NULL) {
+                /// ok
+            }
+            else {
+                int len;
+                unsigned char buffer[1024];
+
                 while ((len = fread(buffer, 1, 1024, file))) {
                     Update(buffer, len);
                 }
@@ -328,7 +355,7 @@ namespace EvoScript::Tools {
         }
 
         /// Digests a byte-array already in memory
-        char *digestMemory(BYTE *memchunk, int len) {
+        ES_NODISCARD std::string DigestMemory(MD5_BYTE *memchunk, int len) {
             Init();
             Update(memchunk, len);
             Final();
@@ -337,7 +364,7 @@ namespace EvoScript::Tools {
         }
 
         // Digests a string and prints the result.
-        char *digestString(char *string) {
+        ES_NODISCARD std::string DigestString(char *string) {
             Init();
             Update((unsigned char *) string, strlen(string));
             Final();

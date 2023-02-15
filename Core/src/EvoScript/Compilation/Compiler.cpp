@@ -115,13 +115,16 @@ namespace EvoScript {
             Tools::CreatePath(path);
 
             /// чтобы все хеш суммы сразу создались, нужно их проверить
-            uint32_t hashCompare = static_cast<uint32_t>(CheckSourceHash(source, path, isDebug))
-                                   + static_cast<uint32_t>(CheckApiHash(path, isDebug));
+            uint32_t hashCompare = 0;
+            hashCompare += static_cast<uint32_t>(CheckSourceHash(source, path, isDebug));
+            hashCompare += static_cast<uint32_t>(CheckApiHash(path, isDebug));
 
             if (hashCompare == 2) {
-                if (TryLoad(script))
+                if (TryLoad(script)) {
                     return true;
-            } else if (Tools::ESFileSystem::IsExists(module)) {
+                }
+            }
+            else if (Tools::ESFileSystem::IsExists(module)) {
                 Tools::ESFileSystem::Delete(module);
             }
 
