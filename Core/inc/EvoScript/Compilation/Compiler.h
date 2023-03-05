@@ -22,6 +22,7 @@ namespace EvoScript {
         IState* AllocateState(const std::string& path);
 
         void SetApiVersion(std::string version);
+        void SetMultiInstances(bool enabled) { m_multiInstances = enabled; }
 
         void AddIncludePath(const std::string& path);
 
@@ -44,6 +45,7 @@ namespace EvoScript {
         std::vector<std::string> m_includes;
 
         bool m_compilePDB = false;
+        bool m_multiInstances = true;
 
         std::string m_apiVersion = "None";
         std::string m_cachePath  = "None";

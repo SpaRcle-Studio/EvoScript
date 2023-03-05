@@ -13,6 +13,7 @@
 #include <unordered_map>
 
 #define ES_FUNCTION std::function
+#define ES_NOOP (void)0
 
 #define ES_CALL_DLL(function) \
     if (function) { function(); return true; } else return false;

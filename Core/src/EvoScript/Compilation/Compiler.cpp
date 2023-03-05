@@ -180,6 +180,11 @@ namespace EvoScript {
     }
 
     IState* Compiler::AllocateState(const std::string &name) {
+        if (!m_multiInstances) {
+            const std::string module = m_cachePath + "/Scripts/" + name + "/Module" + IState::Extension;
+            return IState::Allocate(module);
+        }
+
         ret:
         if (auto find = m_moduleCopies.find(name); find == m_moduleCopies.end()) {
             m_moduleCopies[name] = std::vector<uint32_t>();
@@ -249,6 +254,7 @@ namespace EvoScript {
 
         if (Tools::ESFileSystem::IsExists(module)) {
             /// ES_LOG("Compiler::Load() : successfully loaded the \"" + script->GetName() + "\" script!");
+            ES_NOOP;
             return true;
         }
 
