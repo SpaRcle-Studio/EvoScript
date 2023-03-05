@@ -248,7 +248,7 @@ namespace EvoScript {
         const auto module = path + "/Module" + IState::Extension;
 
         if (Tools::ESFileSystem::IsExists(module)) {
-            ES_LOG("Compiler::Load() : successfully loaded the \"" + script->GetName() + "\" script!");
+            /// ES_LOG("Compiler::Load() : successfully loaded the \"" + script->GetName() + "\" script!");
             return true;
         }
 
