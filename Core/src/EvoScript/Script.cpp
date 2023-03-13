@@ -66,8 +66,8 @@ bool EvoScript::Script::HookFunctions() {
     return true;
 }
 
-EvoScript::Script *EvoScript::Script::Allocate(const std::string &name, MethodPointers methodPointers) {
-    return new Script(name, std::move(methodPointers));
+EvoScript::Script *EvoScript::Script::Allocate(const std::string &name, Compiler* pCompiler, MethodPointers methodPointers) {
+    return new Script(name, pCompiler, std::move(methodPointers));
 }
 
 EvoScript::Script::~Script() {
@@ -76,4 +76,33 @@ EvoScript::Script::~Script() {
         delete m_state;
         m_state = nullptr;
     }
+}
+
+bool EvoScript::Script::IsDirty() const {
+    const auto path = m_compiler->GetCachePath() + "/Scripts/" + EvoScript::Tools::FixPath(GetName());
+    const auto source = EvoScript::Tools::FixPath(GetPath());
+
+    const auto name = EvoScript::Tools::BackReadTo(GetName(), '/');
+    const auto module = path + "/Module" + IState::Extension;
+
+    const bool isDebug = IsDebug();
+
+    const std::string fullPath = path + "/source.hash";
+
+    auto currHash = std::pair(isDebug, std::vector {
+            EvoScript::Tools::GetFileHash(source + ".cpp"),
+            EvoScript::Tools::GetFileHash(source + ".h")
+    });
+
+    if (EvoScript::Tools::ESFileSystem::IsExists(fullPath)) {
+        auto loadHash = EvoScript::Tools::LoadHashInfo(fullPath);
+        if (!EvoScript::Tools::HashEquals(loadHash, currHash)) {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+
+    return true;
 }

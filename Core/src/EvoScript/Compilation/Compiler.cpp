@@ -125,7 +125,9 @@ namespace EvoScript {
                 }
             }
             else if (Tools::ESFileSystem::IsExists(module)) {
-                Tools::ESFileSystem::Delete(module);
+                if (!Tools::ESFileSystem::Delete(module)) {
+                    ES_WARN("Compiler::Compile() : failed to delete module!\n\tPath: " + module);
+                }
             }
 
             ///auto&& build  = path + "/Build/" + std::to_string(Tools::RandomUInt32()) + "/";

@@ -23,16 +23,19 @@ namespace EvoScript {
     class Script : private Tools::NonCopyable {
         using MethodPointers = std::vector<std::function<void(EvoScript::IState*)>>;
     private:
-        Script(std::string name, MethodPointers&& methodPointers)
+        Script(std::string name, Compiler* pCompiler, MethodPointers&& methodPointers)
             : m_name(std::move(name))
             , m_methodPointers(std::move(methodPointers))
+            , m_compiler(pCompiler)
         { }
 
     public:
         ~Script() override;
 
     public:
-        static Script* Allocate(const std::string& name, MethodPointers methodPointers);
+        ES_NODISCARD bool IsDirty() const;
+
+        static Script* Allocate(const std::string& name, Compiler* pCompiler, MethodPointers methodPointers);
 
         template<typename Fn> ES_INLINE Fn GetFunction(const std::string& name) {
             return reinterpret_cast<Fn>(m_state->GetFunction<Fn>(name.c_str()));
@@ -87,6 +90,7 @@ namespace EvoScript {
         std::string    m_path           = "None";
         MethodPointers m_methodPointers = { };
         IState*        m_state          = nullptr;
+        Compiler*      m_compiler       = nullptr;
 
 #ifdef NDEBUG
         const bool  m_debug         = false;
