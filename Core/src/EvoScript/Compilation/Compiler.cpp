@@ -139,7 +139,10 @@ namespace EvoScript {
             }
             Tools::CreatePath(build);
 
-            ES_LOG("Compiler::Compile() : compile \"" + script->GetName() + "\" script...");
+            ES_LOG("Compiler::Compile() : compile \"" + script->GetName() + "\" " +
+                std::string(script->IsDebug() ? "[Debug]" : "[Release]")
+                + " script..."
+            );
 
     #ifdef ES_MSVC
             auto&& compiler = Tools::FindMSVCCompiler();
