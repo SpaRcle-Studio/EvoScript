@@ -148,6 +148,16 @@ namespace EvoScript {
             auto&& compiler = Tools::FindMSVCCompiler();
             auto&& vars = Tools::FindMSVCVars64();
 
+            if (compiler.empty()) {
+                ES_ERROR("Compiler::Compile() : MSVC compiler not found!");
+                return false;
+            }
+
+            if (vars.empty()) {
+                ES_ERROR("Compiler::Compile() : MSVC vars64 not found!");
+                return false;
+            }
+
             std::string includes;
             for (auto&& include : m_includes) {
                 includes.append("/I\"").append(include).append("\" ");
@@ -164,6 +174,8 @@ namespace EvoScript {
             );
 
             system(command.c_str());
+    #else
+            ES_ERROR("Compiler::Compile() : unsupported compiler! Please, install MSVC");
     #endif
 
             if (auto files = Tools::GetAllFilesInDirWithExt(build, IState::Extension); files.size() == 1) {

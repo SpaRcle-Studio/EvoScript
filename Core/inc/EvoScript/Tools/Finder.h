@@ -10,7 +10,16 @@
 #include <EvoScript/Tools/FileSystem.h>
 
 namespace EvoScript::Tools {
-    static const std::string VS_PATH = "C:/Program Files (x86)/Microsoft Visual Studio";
+    static const std::vector<std::string> VS_PATHS = {
+        "C:/Program Files (x86)/Microsoft Visual Studio",
+        "C:/Program Files/Microsoft Visual Studio",
+
+        "D:/Program Files (x86)/Microsoft Visual Studio",
+        "D:/Program Files/Microsoft Visual Studio",
+
+        "E:/Program Files (x86)/Microsoft Visual Studio",
+        "E:/Program Files/Microsoft Visual Studio",
+    };
 
     static const std::vector<std::string> VS_YEARS = {
             "2015", "2016", "2017", "2018",
@@ -24,25 +33,27 @@ namespace EvoScript::Tools {
     };
 
     static std::string FindMSVCVars64() {
-        for (const std::string& yearFolder : ESFileSystem::GetAllFoldersInDir(VS_PATH)) {
-            auto &&pIt = std::find_if(VS_YEARS.begin(), VS_YEARS.end(), [&yearFolder](auto &&element) -> bool {
-                return yearFolder.find(element) != std::string::npos;
-            });
-
-            if (pIt == VS_YEARS.end()) {
-                continue;
-            }
-
-            for (auto &&typeFolder : ESFileSystem::GetAllFoldersInDir(yearFolder)) {
-                pIt = std::find_if(VS_TYPES.begin(), VS_TYPES.end(), [&typeFolder](auto &&element) -> bool {
-                    return typeFolder.find(element) != std::string::npos;
+        for (auto&& vsPath : VS_PATHS) {
+            for (const std::string& yearFolder: ESFileSystem::GetAllFoldersInDir(vsPath)) {
+                auto &&pIt = std::find_if(VS_YEARS.begin(), VS_YEARS.end(), [&yearFolder](auto &&element) -> bool {
+                    return yearFolder.find(element) != std::string::npos;
                 });
 
-                if (pIt == VS_TYPES.end()) {
+                if (pIt == VS_YEARS.end()) {
                     continue;
                 }
 
-                return typeFolder + "/VC/Auxiliary/Build/vcvars64.bat";
+                for (auto&& typeFolder: ESFileSystem::GetAllFoldersInDir(yearFolder)) {
+                    pIt = std::find_if(VS_TYPES.begin(), VS_TYPES.end(), [&typeFolder](auto &&element) -> bool {
+                        return typeFolder.find(element) != std::string::npos;
+                    });
+
+                    if (pIt == VS_TYPES.end()) {
+                        continue;
+                    }
+
+                    return typeFolder + "/VC/Auxiliary/Build/vcvars64.bat";
+                }
             }
         }
 
@@ -50,26 +61,28 @@ namespace EvoScript::Tools {
     }
 
     static std::string FindMSVC() {
-        for (const std::string& yearFolder : ESFileSystem::GetAllFoldersInDir(VS_PATH)) {
-            auto&& pIt = std::find_if(VS_YEARS.begin(), VS_YEARS.end(), [&yearFolder](auto&& element) -> bool {
-                return yearFolder.find(element) != std::string::npos;
-            });
-
-            if (pIt == VS_YEARS.end()) {
-                continue;
-            }
-
-            for (auto&& typeFolder : ESFileSystem::GetAllFoldersInDir(yearFolder)) {
-                pIt = std::find_if(VS_TYPES.begin(), VS_TYPES.end(), [&typeFolder](auto&& element) -> bool {
-                    return typeFolder.find(element) != std::string::npos;
+        for (auto&& vsPath : VS_PATHS) {
+            for (const std::string& yearFolder: ESFileSystem::GetAllFoldersInDir(vsPath)) {
+                auto &&pIt = std::find_if(VS_YEARS.begin(), VS_YEARS.end(), [&yearFolder](auto &&element) -> bool {
+                    return yearFolder.find(element) != std::string::npos;
                 });
 
-                if (pIt == VS_TYPES.end()) {
+                if (pIt == VS_YEARS.end()) {
                     continue;
                 }
 
-                for (auto&& versionFolder : ESFileSystem::GetAllFoldersInDir(typeFolder + "/VC/Tools/MSVC")) {
-                    return versionFolder;
+                for (auto&& typeFolder: ESFileSystem::GetAllFoldersInDir(yearFolder)) {
+                    pIt = std::find_if(VS_TYPES.begin(), VS_TYPES.end(), [&typeFolder](auto &&element) -> bool {
+                        return typeFolder.find(element) != std::string::npos;
+                    });
+
+                    if (pIt == VS_TYPES.end()) {
+                        continue;
+                    }
+
+                    for (auto &&versionFolder: ESFileSystem::GetAllFoldersInDir(typeFolder + "/VC/Tools/MSVC")) {
+                        return versionFolder;
+                    }
                 }
             }
         }

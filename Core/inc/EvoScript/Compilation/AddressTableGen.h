@@ -124,10 +124,22 @@ namespace EvoScript {
         AddressTableGen(const AddressTableGen&) = delete;
 
     public:
-        [[nodiscard]] size_t GetApiHash() const { return m_hash; }
-        [[nodiscard]] std::string GetApiVersion() const { return std::to_string(GetApiHash()); }
-        [[nodiscard]] std::vector<std::function<void(EvoScript::IState*)>> GetAddresses() const { return m_methodPointers; }
-        [[nodiscard]] Header GetHeader(const std::string& name) const {
+        template<typename T> void SetPointer(T* pointer) {
+            m_pointers[typeid(T).hash_code()] = (void*)pointer;
+        }
+
+        template<typename T> T* GetPointer() const {
+            auto&& pIt = m_pointers.find(typeid(T).hash_code());
+            if (pIt == m_pointers.end()) {
+                return nullptr;
+            }
+            return (T*)pIt->second;
+        }
+
+        ES_NODISCARD size_t GetApiHash() const { return m_hash; }
+        ES_NODISCARD std::string GetApiVersion() const { return std::to_string(GetApiHash()); }
+        ES_NODISCARD std::vector<std::function<void(EvoScript::IState*)>> GetAddresses() const { return m_methodPointers; }
+        ES_NODISCARD Header GetHeader(const std::string& name) const {
             if (auto f = m_headers.find(name); f == m_headers.end()) {
                 ES_ERROR("AddressTableGen::GetHeader() : header isn't exists!");
                 return { };
@@ -188,6 +200,7 @@ namespace EvoScript {
         std::map<std::string, Header>                        m_headers;
         std::vector<std::function<void(EvoScript::IState*)>> m_methodPointers;
         size_t                                               m_hash = 0;
+        std::map<uint64_t, void*> m_pointers;
 
     };
 }
@@ -284,6 +297,25 @@ namespace EvoScript {
         if (fun) fun([]() -> _returnType { _function });                                                         \
     };                                                                                                           \
     _addrTable->RegisterMethod(fun, #_class, #_method, #_returnType, { }, EvoScript::Static, "", _pub); }        \
+
+#define ESRegisterCustomStaticMethodPass(_pub, _addrTable, _class, _method, _return, _args, _pass, _function) {  \
+    std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                                        \
+    auto fun = [_pass] (EvoScript::IState* state) {                                                              \
+        typedef void(*SetterFnPtr)(const ES_FUNCTION<_return (_args)>&);                                         \
+        auto fun = state->GetFunction<SetterFnPtr>(                                                              \
+            std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                                \
+        if (fun) fun([_pass](_args) -> _return { _function });                                                   \
+    };                                                                                                           \
+    _addrTable->RegisterMethod(fun, #_class, #_method, #_return, strArgs, EvoScript::Static, "", _pub); }        \
+
+#define ESRegisterCustomStaticMethodPassArg0(_pub, _addrTable, _class, _method, _return, _pass, _function) {     \
+    auto fun = [_pass] (EvoScript::IState* state) {                                                              \
+        typedef void(*SetterFnPtr)(const ES_FUNCTION<_return ()>&);                                              \
+        auto fun = state->GetFunction<SetterFnPtr>(                                                              \
+            std::string(#_class).append(#_method).append("FnPtrSetter").c_str());                                \
+        if (fun) fun([_pass]() -> _return { _function });                                                        \
+    };                                                                                                           \
+    _addrTable->RegisterMethod(fun, #_class, #_method, #_return, { }, EvoScript::Static, "", _pub); }            \
 
 #define ESRegisterStaticFunc(_addrTable, _method, _returnType, _args, header, _function) {                       \
     std::vector<std::string> strArgs = EvoScript::Tools::GetArgs(#_args);                                        \
