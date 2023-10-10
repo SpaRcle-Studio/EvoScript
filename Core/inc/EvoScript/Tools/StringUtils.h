@@ -67,7 +67,7 @@ namespace EvoScript::Tools {
         goto ret;
     }
 
-    static std::string GetData() {
+    static std::string GetDate() {
         std::time_t result = std::time(nullptr);
         std::string str = std::ctime(&result);
         return str.substr(0, str.size() - 1);

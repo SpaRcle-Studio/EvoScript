@@ -60,7 +60,7 @@ namespace EvoScript {
             std::string result;
 
             result += "//\n// Created by Evo Script code generator on "
-                      + Tools::GetData() + " | Author - Monika\n//\n\n";
+                      + Tools::GetDate() + " | Author - Monika\n//\n\n";
 
             result += "#ifndef EVOSCRIPTLIB_" + Tools::ToUpper(m_name) + "_H\n";
             result += "#define EVOSCRIPTLIB_" + Tools::ToUpper(m_name) + "_H\n\n";

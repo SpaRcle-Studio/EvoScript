@@ -8,6 +8,7 @@ add_library(EvoScriptCore STATIC
         src/EvoScript/Compilation/Compiler.cpp
         src/EvoScript/Compilation/AddressTableGen.cpp
         src/EvoScript/Compilation/Method.cpp
+        src/EvoScript/Compilation/CMakeCodeGen.cpp
 
         src/EvoScript/Script.cpp
         src/EvoScript/IState.cpp

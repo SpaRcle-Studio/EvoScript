@@ -55,7 +55,7 @@ bool EvoScript::CastingGen::Save(const std::string& folder) {
 
 std::string EvoScript::CastingGen::Generate() {
     std::string result = "//\n// Created by Evo Script code generator on "
-              + Tools::GetData() + " | Author - Monika\n//\n\n";
+              + Tools::GetDate() + " | Author - Monika\n//\n\n";
 
     result += "#ifndef EVOSCRIPTLIB_CASTS_H\n";
     result += "#define EVOSCRIPTLIB_CASTS_H\n\n";

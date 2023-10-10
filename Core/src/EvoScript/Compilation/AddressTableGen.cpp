@@ -105,7 +105,7 @@ bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
         }
 
         file <<
-                "//\n// Created by Evo Script code generator on " + Tools::GetData() + " | Author - Monika\n//\n\n"
+                "//\n// Created by Evo Script code generator on " + Tools::GetDate() + " | Author - Monika\n//\n\n"
                 "#ifndef EVOSCRIPTLIB_MEMORY_ALLOCATOR_H\n"
                 "#define EVOSCRIPTLIB_MEMORY_ALLOCATOR_H\n"
                 "\n"

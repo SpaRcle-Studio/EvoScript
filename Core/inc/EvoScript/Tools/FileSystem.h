@@ -69,6 +69,27 @@ namespace EvoScript::Tools {
             CreatePath(path, pos + 1);
         }
     }
+
+    static void ForEachInDirWithExtRecursive(const std::string& path, const std::string& ext, const std::function<void(std::string)>& function) {
+        if (!Tools::ESFileSystem::GetAllFoldersInDir) {
+            ES_ERROR("EvoScript::Tools::ForEachInDirWithExtRecursive() : \"GetAllFoldersInDir\" is nullptr!");
+            return;
+        }
+
+        auto&& files = GetAllFilesInDirWithExt(path, ext);
+        for (auto&& file : files) {
+            function(file);
+        }
+
+        auto&& folders = ESFileSystem::GetAllFoldersInDir(path);
+        if (folders.empty()) {
+            return;
+        }
+
+        for (auto&& folder : folders) {
+            ForEachInDirWithExtRecursive(folder, ext, function);
+        }
+    }
 }
 
 #endif //EVOSCRIPT_FILESYSTEM_H
