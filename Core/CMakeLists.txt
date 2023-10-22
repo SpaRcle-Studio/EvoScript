@@ -3,17 +3,11 @@ project(EvoScriptCore)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_library(EvoScriptCore STATIC
-        src/EvoScript/Compilation/Casting.cpp
-        src/EvoScript/Compilation/Compiler.cpp
-        src/EvoScript/Compilation/AddressTableGen.cpp
-        src/EvoScript/Compilation/Method.cpp
-        src/EvoScript/Compilation/CMakeCodeGen.cpp
-
-        src/EvoScript/Script.cpp
-        src/EvoScript/IState.cpp
-
-        inc/EvoScript/Win32State.hpp
-        )
+if (EVO_SCRIPT_STATIC_LIBRARY)
+    add_library(EvoScriptCore STATIC EvoScript.cxx)
+else()
+    add_library(EvoScriptCore SHARED EvoScript.cxx)
+    add_library(EvoScriptCore::lib ALIAS EvoScriptCore)
+endif()
 
 target_include_directories(EvoScriptCore PUBLIC inc)
