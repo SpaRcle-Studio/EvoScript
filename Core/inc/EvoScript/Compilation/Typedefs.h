@@ -33,7 +33,7 @@ namespace EvoScript::Typedefs {
     typedef void(*OnDisableFnPtr)();
     typedef void(*StartFnPtr)();
     typedef void(*CloseFnPtr)();
-    typedef void(*UpdateFnPtr)(float_t dt);
+    typedef void(*UpdateFnPtr)(float dt);
     typedef void(*FixedUpdateFnPtr)();
     typedef void(*OnGUIFnPtr)();
 }
