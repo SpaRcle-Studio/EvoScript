@@ -5,13 +5,13 @@
 #ifndef EVOSCRIPT_HASHUTILS_H
 #define EVOSCRIPT_HASHUTILS_H
 
-#include <string>
-#include <vector>
-#include <fstream>
-
 #include <EvoScript/Tools/Debug.h>
 #include <EvoScript/Tools/FileSystem.h>
 #include <EvoScript/Tools/MD5Hash.h>
+
+#include <string>
+#include <vector>
+#include <fstream>
 
 namespace EvoScript::Tools {
     static bool HashEquals(const std::pair<bool, std::vector<std::string>>& a, const std::pair<bool, std::vector<std::string>>& b) {
