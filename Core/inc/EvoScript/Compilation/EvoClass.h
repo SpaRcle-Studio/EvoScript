@@ -52,7 +52,7 @@ namespace EvoScript {
             /// Запрещаем копировать, удалять и создававайть экземпляры класса
             result += "public:\n";
             result += "\t" + m_name + "() = delete;\n";
-            result += "\t~" + m_name + "() = delete;\n";
+            result += "\t~" + m_name + "() = default;\n";
             result += "\t" + m_name + "(" + m_name + " &) = delete;\n";
             result += "\t" + m_name + "(const " + m_name + " &) = delete;\n";
 
