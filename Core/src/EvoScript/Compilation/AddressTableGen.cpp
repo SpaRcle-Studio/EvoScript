@@ -202,6 +202,38 @@ bool EvoScript::AddressTableGen::RegisterTypedef(
     return true;
 }
 
+bool EvoScript::AddressTableGen::RegisterUsing(
+        const std::string &name,
+        const std::string& header,
+        const std::string &value)
+{
+    HashCombine("Using_" + name);
+
+    std::string _using = "using " + name + " = " + value + ";\n";
+    if (auto f = m_headers.find(header); f != m_headers.end()) // add in existing header
+        m_headers[header].m_typedefs.emplace_back(_using);
+    else // create new header
+        m_headers[header] = { header, { /* includes */ }, { /*incomplete*/ }, { _using }, { /*enums*/ }, { /*classes*/ } };
+
+    return true;
+}
+
+bool EvoScript::AddressTableGen::RegisterDefine(
+        const std::string &name,
+        const std::string& header,
+        const std::string &value)
+{
+    HashCombine("Define_" + name);
+
+    std::string _define = "#define " + name + " " + value + ";\n";
+    if (auto f = m_headers.find(header); f != m_headers.end()) // add in existing header
+        m_headers[header].m_typedefs.emplace_back(_define);
+    else // create new header
+        m_headers[header] = { header, { /* includes */ }, { /*incomplete*/ }, { _define }, { /*enums*/ }, { /*classes*/ } };
+
+    return true;
+}
+
 void EvoScript::AddressTableGen::AddMethodPointer(const std::function<void(EvoScript::IState *)> &setter) {
     this->m_methodPointers.emplace_back(setter);
 }

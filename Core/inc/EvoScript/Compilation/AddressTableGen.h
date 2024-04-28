@@ -190,6 +190,8 @@ namespace EvoScript {
                 const std::vector<std::pair<std::string, int32_t>>& values);
 
         bool RegisterTypedef(const std::string& name, const std::string& header, const std::string& value);
+        bool RegisterUsing(const std::string& name, const std::string& header, const std::string& value);
+        bool RegisterDefine(const std::string& name, const std::string& header, const std::string& value);
         bool AddIncompleteType(const std::string& className, const std::string& header);
         void AddMethodPointer(const std::function<void(EvoScript::IState*)>& setter);
         void HashCombine(const std::string& hashString);
