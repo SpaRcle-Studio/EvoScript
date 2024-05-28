@@ -174,9 +174,6 @@ namespace EvoScript {
             );
 
             system(command.c_str());
-    #else
-            ES_ERROR("Compiler::Compile() : unsupported compiler! Please, install MSVC");
-    #endif
 
             if (auto files = Tools::GetAllFilesInDirWithExt(build, IState::Extension); files.size() == 1) {
                 Tools::ESFileSystem::Copy(files[0], module);
@@ -184,6 +181,33 @@ namespace EvoScript {
             else {
                 ES_ERROR("Compiler::Compile() : file not found! \n\tPath: " + module);
             }
+    #elif defined(ES_GCC)
+            // TODO: What should we use here? Search by path or just use 'g++' from PATH in system() call?
+            std::string compiler = "/usr/bin/g++ ";
+
+            std::string includes;
+            for (auto&& include : m_includes) {
+                includes.append("-I ").append(include).append(" ");
+            }
+
+            /*auto&& command = ES_FORMAT("cd \"%s\" && call \"%s\" && \"%s\" %s %s /std:c++17 /nologo /O1 %s /Os /GF /GS- \"%s.cpp\"",
+                build.c_str(),
+                vars.c_str(),
+                compiler.c_str(),
+                includes.c_str(),
+                script->IsDebug() ? "/LDd" : "/LD",
+                m_compilePDB ? " /ZI " : " ",
+                source.c_str()
+            );
+            */
+
+            // TODO: Add ability to choose whether we want to compile debug or release build.
+            auto&& command = "cd " + build + " && " + compiler + includes + " -std=c++17 " + source + ".cpp -o " + module + " -shared -fPIC";
+
+            system(command.c_str());
+    #else
+            ES_ERROR("Compiler::Compile() : unsupported compiler! Please, install MSVC on Windows or GCC on Linux!");
+    #endif
 
             if (success = Tools::ESFileSystem::IsExists(module); success) {
                 ES_LOG("Compiler::Compile() : successfully compiled the \"" + script->GetName() + "\" script!");

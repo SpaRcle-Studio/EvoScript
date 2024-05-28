@@ -38,6 +38,8 @@ namespace EvoScript {
     public:
 #ifdef WIN32
         static const inline std::string Extension = ".dll";
+#elif defined(SR_LINUX)
+        static const inline std::string Extension = ".so";
 #else
         static const inline std::string Extension = ".UNKNOWN";
 #endif

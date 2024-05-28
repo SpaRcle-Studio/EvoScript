@@ -6,7 +6,11 @@
 #define EVOSCRIPTLIB_BEHAVIOUR_H
 
 #ifndef EXTERN
-#define EXTERN extern "C" __declspec(dllexport)
+	#ifdef __GNUC__
+		#define EXTERN __attribute__((visibility("default")))
+	#else
+		#define EXTERN extern "C" __declspec(dllexport)
+	#endif
 #endif
 
 #include <functional>

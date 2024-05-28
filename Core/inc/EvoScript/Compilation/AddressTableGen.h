@@ -66,7 +66,11 @@ namespace EvoScript {
             result += "#define EVOSCRIPTLIB_" + Tools::ToUpper(m_name) + "_H\n\n";
 
             result += "#ifndef EXTERN\n";
+        #ifdef ES_MSVC
             result += "#define EXTERN extern \"C\" __declspec(dllexport)\n";
+        #elif defined(ES_GCC)
+            result += "#define EXTERN __attribute__((visibility(\"default\")))\n";
+        #endif
             result += "#endif\n\n";
 
             result += "#include <functional>\n\n";

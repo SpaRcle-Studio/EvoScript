@@ -28,6 +28,14 @@
     #define ES_MSVC
 #endif
 
+#ifdef __GNUC__
+    #define ES_GCC
+#endif
+
+#ifdef SR_LINUX
+    #define ES_LINUX
+#endif
+
 #ifdef WIN32
     #define ES_WIN32
 #endif
