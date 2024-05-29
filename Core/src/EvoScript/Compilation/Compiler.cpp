@@ -201,8 +201,8 @@ namespace EvoScript {
             );
             */
 
-            // TODO: Add ability to choose whether we want to compile debug or release build.
-            auto&& command = "cd " + build + " && " + compiler + includes + " -std=c++17 " + source + ".cpp -o " + module + " -shared -fPIC";
+            std::string debug = script->IsDebug() ? "-g " : "-O3 ";
+            auto&& command = "cd " + build + " && " + compiler + "-shared -fPIC " + includes + " -std=c++17 -ldl " + debug + "-rdynamic "+ source + ".cpp -o " + module;
 
             system(command.c_str());
     #else

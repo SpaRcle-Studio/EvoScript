@@ -32,7 +32,7 @@
     #define ES_GCC
 #endif
 
-#ifdef SR_LINUX
+#if defined(SR_LINUX) || defined(__linux__)
     #define ES_LINUX
 #endif
 

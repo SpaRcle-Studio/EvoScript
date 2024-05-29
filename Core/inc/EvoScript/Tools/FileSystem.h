@@ -62,6 +62,11 @@ namespace EvoScript::Tools {
         if (path.back() != '/')
             path.append("/");
 
+    #ifdef ES_LINUX
+        ESFileSystem::CreateFolder(path);
+        return;
+    #endif
+
         auto pos = path.find('/', offset);
         if (pos != std::string::npos) {
             auto dir = Tools::Read(path, pos);

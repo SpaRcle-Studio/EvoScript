@@ -69,7 +69,7 @@ namespace EvoScript {
         #ifdef ES_MSVC
             result += "#define EXTERN extern \"C\" __declspec(dllexport)\n";
         #elif defined(ES_GCC)
-            result += "#define EXTERN __attribute__((visibility(\"default\")))\n";
+            result += "#define EXTERN extern \"C\" __attribute__((visibility(\"default\")))\n";
         #endif
             result += "#endif\n\n";
 

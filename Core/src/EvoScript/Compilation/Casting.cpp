@@ -62,7 +62,7 @@ std::string EvoScript::CastingGen::Generate() {
 
     result += "#ifndef EXTERN\n";
     result += "\t#ifdef __GNUC__\n";
-    result += "\t#define EXTERN __attribute__((visibility(\"default\")))\n";
+    result += "\t#define EXTERN extern \"C\" __attribute__((visibility(\"default\")))\n";
     result += "\t#else\n";
     result += "\t#define EXTERN extern \"C\" __declspec(dllexport)\n";
     result += "\t#endif\n";

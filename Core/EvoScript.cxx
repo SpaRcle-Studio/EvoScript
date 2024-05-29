@@ -10,3 +10,7 @@
 #ifdef WIN32
     #include "inc/EvoScript/Win32State.hpp"
 #endif
+
+#ifdef __linux__
+    #include "inc/EvoScript/LinuxState.hpp"
+#endif

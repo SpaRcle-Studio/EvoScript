@@ -114,7 +114,7 @@ bool EvoScript::AddressTableGen::Save(const std::string& libFolder) {
                 "\t#define ES_GCC\n"
                 "\t#include <cstdlib>\n"
                 "\t#ifndef ES_EXTERN\n"
-                "\t\t#define ES_EXTERN __attribute__((visibility(\"default\")))\n"
+                "\t\t#define ES_EXTERN extern \"C\" __attribute__((visibility(\"default\")))\n"
                 "\t#endif\n"
                 "#endif\n\n"
                 "#ifdef __linux__\n"
