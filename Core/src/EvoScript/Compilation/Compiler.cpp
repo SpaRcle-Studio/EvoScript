@@ -145,7 +145,7 @@ namespace EvoScript {
             );
 
     #ifdef ES_MSVC
-            std::string vars = "";
+            std::string vars;
             if (m_compilerPath.empty()) {
                 m_compilerPath = Tools::FindMSVCCompiler();
                 vars = Tools::FindMSVCVars64();

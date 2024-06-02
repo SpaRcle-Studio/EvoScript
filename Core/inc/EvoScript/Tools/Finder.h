@@ -32,7 +32,7 @@ namespace EvoScript::Tools {
             "Professional", "Community", "Enterprise", "BuildTools"
     };
 
-    static std::string FindMSVCVars62(const std::string& compilerPath) {
+    static std::string FindMSVCVars64(const std::string& compilerPath) {
         std::stringstream test(compilerPath);
         std::string segment;
         std::vector<std::string> seglist;
@@ -46,6 +46,8 @@ namespace EvoScript::Tools {
                 return seglist[i - 1] + "/VC/Auxiliary/Build/vcvars64.bat";
             }
         }
+
+        return std::string();
     }
 
     static std::string FindMSVCVars64() {
