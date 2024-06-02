@@ -22,6 +22,9 @@ namespace EvoScript {
         ES_NODISCARD std::string GetCachePath() const { return m_cachePath; }
         ES_NODISCARD std::string GetAPIVersion() const { return m_apiVersion; }
 
+        ES_NODISCARD std::string GetCompilerPath() const { return m_compilerPath; }
+        void SetCompilerPath(const std::string& compilerPath) { m_compilerPath = compilerPath; }
+
         IState* AllocateState(const std::string& path);
 
         void SetApiVersion(std::string version);
@@ -56,6 +59,7 @@ namespace EvoScript {
         std::recursive_mutex m_mutex;
         ModuleCopies m_moduleCopies;
 
+        std::string m_compilerPath = "";
     };
 }
 

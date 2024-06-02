@@ -145,10 +145,16 @@ namespace EvoScript {
             );
 
     #ifdef ES_MSVC
-            auto&& compiler = Tools::FindMSVCCompiler();
-            auto&& vars = Tools::FindMSVCVars64();
+            std::string vars = "";
+            if (m_compilerPath.empty()) {
+                m_compilerPath = Tools::FindMSVCCompiler();
+                vars = Tools::FindMSVCVars64();
+            }
+            else {
+                vars = Tools::FindMSVCVars64(m_compilerPath);
+            }
 
-            if (compiler.empty()) {
+            if (m_compilerPath.empty()) {
                 ES_ERROR("Compiler::Compile() : MSVC compiler not found!");
                 return false;
             }
@@ -166,7 +172,7 @@ namespace EvoScript {
             auto&& command = ES_FORMAT("cd \"%s\" && call \"%s\" && \"%s\" %s %s /std:c++17 /nologo /O1 %s /Os /GF /GS- \"%s.cpp\"",
                 build.c_str(),
                 vars.c_str(),
-                compiler.c_str(),
+                m_compilerPath.c_str(),
                 includes.c_str(),
                 script->IsDebug() ? "/LDd" : "/LD",
                 m_compilePDB ? " /ZI " : " ",
@@ -183,7 +189,9 @@ namespace EvoScript {
             }
     #elif defined(ES_GCC)
             // TODO: What should we use here? Search by path or just use 'g++' from PATH in system() call?
-            std::string compiler = "/usr/bin/g++ ";
+            if (m_compilerPath.empty()) {
+                m_compilerPath = "/usr/bin/g++";
+            }
 
             std::string includes;
             for (auto&& include : m_includes) {
@@ -202,7 +210,7 @@ namespace EvoScript {
             */
 
             std::string debug = script->IsDebug() ? "-g " : "-O3 ";
-            auto&& command = "cd " + build + " && " + compiler + "-shared -fPIC " + includes + " -std=c++17 -ldl " + debug + "-rdynamic "+ source + ".cpp -o " + module;
+            auto&& command = "cd " + build + " && " + m_compilerPath + " -shared -fPIC " + includes + " -std=c++17 -ldl " + debug + "-rdynamic "+ source + ".cpp -o " + module;
 
             system(command.c_str());
     #else

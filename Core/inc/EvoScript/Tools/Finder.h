@@ -32,6 +32,22 @@ namespace EvoScript::Tools {
             "Professional", "Community", "Enterprise", "BuildTools"
     };
 
+    static std::string FindMSVCVars62(const std::string& compilerPath) {
+        std::stringstream test(compilerPath);
+        std::string segment;
+        std::vector<std::string> seglist;
+
+        while (std::getline(test, segment, '/')) {
+            seglist.push_back(segment);
+        }
+
+        for (uint16_t i = 0; i < seglist.size(); ++i) {
+            if (seglist[i] == "VC") {
+                return seglist[i - 1] + "/VC/Auxiliary/Build/vcvars64.bat";
+            }
+        }
+    }
+
     static std::string FindMSVCVars64() {
         for (auto&& vsPath : VS_PATHS) {
             for (const std::string& yearFolder: ESFileSystem::GetAllFoldersInDir(vsPath)) {
