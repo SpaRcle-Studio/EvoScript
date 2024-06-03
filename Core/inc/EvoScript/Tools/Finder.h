@@ -36,14 +36,9 @@ namespace EvoScript::Tools {
     static std::string FindMSVCVars64(const std::string& compilerPath) {
         std::filesystem::path path(compilerPath);
 
-        auto seglist = std::vector<std::string>();
         for (const auto& part : path) {
-            seglist.push_back(part.string());
-        }
-
-        for (auto&& it : seglist) {
-            if (it == "VC") {
-                return (path.parent_path() / "VC" / "Auxiliary" / "Build" / "vcvars64.bat").string();
+            if (part == "VC") {
+                return (path.root_path() / part / "Auxiliary" / "Build" / "vcvars64.bat").string();
             }
         }
 
