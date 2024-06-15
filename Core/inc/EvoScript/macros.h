@@ -11,6 +11,7 @@
 #include <vector>
 #include <mutex>
 #include <unordered_map>
+#include <filesystem>
 
 #define ES_FUNCTION std::function
 #define ES_NOOP (void)0

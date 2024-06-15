@@ -8,7 +8,6 @@
 #include <EvoScript/Tools/StringUtils.h>
 #include <EvoScript/Tools/Debug.h>
 #include <EvoScript/Tools/FileSystem.h>
-#include <filesystem>
 
 namespace EvoScript::Tools {
     static const std::vector<std::string> VS_PATHS = {
@@ -36,9 +35,12 @@ namespace EvoScript::Tools {
     static std::string FindMSVCVars64(const std::string& compilerPath) {
         std::filesystem::path path(compilerPath);
 
+        std::filesystem::path finalPath;
+
         for (const auto& part : path) {
+            finalPath /= part;
             if (part == "VC") {
-                return (path.root_path() / part / "Auxiliary" / "Build" / "vcvars64.bat").string();
+                return (finalPath / "Auxiliary" / "Build" / "vcvars64.bat").string();
             }
         }
 
